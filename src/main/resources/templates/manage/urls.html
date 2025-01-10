@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Управление ссылками</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Мои ссылки</h2>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUrlModal">
+                    Создать новую ссылку
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Короткая ссылка</th>
+                            <th>Оригинальная ссылка</th>
+                            <th>Клики</th>
+                            <th>Лимит кликов</th>
+                            <th>Истекает</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${urls == null || urls.empty}">
+                            <td colspan="6" class="text-center">Нет созданных ссылок</td>
+                        </tr>
+                        <tr th:each="url : ${urls}">
+                            <td>
+                                <a th:href="${url.shortUrl}" th:text="${url.shortUrl}" target="_blank"></a>
+                            </td>
+                            <td th:text="${url.originalUrl}"></td>
+                            <td th:text="${url.clickCount}"></td>
+                            <td th:text="${url.clickLimit ?: 'Без лимита'}"></td>
+                            <td th:text="${url.expiresAt != null ? #temporals.format(url.expiresAt, 'dd.MM.yyyy HH:mm') : 'Никогда'}"></td>
+                            <td>
+                                <form th:action="@{/manage/url/delete}" method="post" class="d-inline">
+                                    <input type="hidden" name="urlId" th:value="${url.id}" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal для создания новой ссылки -->
+        <div class="modal fade" id="createUrlModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Создать новую ссылку</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form th:action="@{/url/create}" method="post">
+                            <div class="mb-3">
+                                <label for="originalUrl" class="form-label">Оригинальная ссылка</label>
+                                <input type="url" class="form-control" id="originalUrl" name="originalUrl" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="clickLimit" class="form-label">Лимит кликов (опционально)</label>
+                                <input type="number" class="form-control" id="clickLimit" name="clickLimit" min="1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="expirationHours" class="form-label">Срок действия в часах (опционально)</label>
+                                <input type="number" class="form-control" id="expirationHours" name="expirationHours" min="1">
+                            </div>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="submit" class="btn btn-primary">Создать</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

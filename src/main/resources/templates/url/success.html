@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Success</title>
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-message {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .short-url-container {
+            background-color: var(--bg-primary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .short-url {
+            color: var(--text-primary);
+            word-break: break-all;
+            margin-right: 10px;
+        }
+
+        .copy-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .copy-button:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            color: var(--accent-color);
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .success-container {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="success-container">
+        <div class="success-message">
+            <h2>URL Successfully Shortened!</h2>
+            <p>Your shortened URL is ready to use:</p>
+        </div>
+        <div class="short-url-container">
+            <span class="short-url" th:text="${shortUrl}"></span>
+            <button class="copy-button" onclick="copyToClipboard()">Copy</button>
+        </div>
+        <a href="/url/list" class="back-link">Back to My URLs</a>
+    </div>
+
+    <script th:inline="javascript">
+        function copyToClipboard() {
+            const shortUrl = /*[[${shortUrl}]]*/ '';
+            navigator.clipboard.writeText(shortUrl).then(() => {
+                const button = document.querySelector('.copy-button');
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+</div>
+</body>
+</html> 

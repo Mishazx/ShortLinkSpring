@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Home</title>
+    <style>
+        .welcome-container {
+            max-width: 800px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: var(--link-color);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--link-color);
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="welcome-container">
+            <!-- Для авторизованных пользователей -->
+            <div th:if="${#authorization.expression('isAuthenticated()')}" class="card">
+                <h1>Welcome back, <span th:text="${#authentication.name}">User</span>!</h1>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${urlCount}">0</div>
+                        <div>Active Links</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${totalClicks}">0</div>
+                        <div>Total Clicks</div>
+                    </div>
+
+                </div>
+                <p style="margin-top: 20px;">
+                    <a href="/urls/create" class="btn">Create New Short Link</a>
+                </p>
+            </div>
+
+            <!-- Для неавторизованных пользователей -->
+            <div th:unless="${#authorization.expression('isAuthenticated()')}">
+                <h1>Welcome to URL Shortener</h1>
+                <p>Create short, memorable links for your long URLs</p>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <i class="fas fa-link feature-icon"></i>
+                        <h3>Short Links</h3>
+                        <p>Create compact URLs that are easy to share</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line feature-icon"></i>
+                        <h3>Track Clicks</h3>
+                        <p>Monitor how many times your links are clicked</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-clock feature-icon"></i>
+                        <h3>Expiration Control</h3>
+                        <p>Set expiration dates for your links</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <a href="/auth/register" class="btn">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

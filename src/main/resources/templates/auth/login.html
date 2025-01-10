@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Вход</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="auth-container">
+            <div class="auth-form">
+                <form th:action="@{/auth/login}" method="post">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Войти</button>
+                    
+                    <div class="social-login">
+                        <a href="/oauth2/authorization/github" class="social-btn">
+                            <img src="/images/github-logo.svg" alt="GitHub Logo" class="social-icon">
+                            Войти через GitHub
+                        </a>
+                        <a href="/oauth2/authorization/yandex" class="social-btn">
+                            <img src="/images/yandex-logo.svg" alt="Yandex Logo" class="social-icon">
+                            Войти через Яндекс
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="auth-link">
+                    <span>Нет аккаунта? </span>
+                    <a href="/auth/register">Зарегистрироваться</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
