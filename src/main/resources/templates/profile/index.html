@@ -38,16 +38,18 @@
                                 <th>Short URL</th>
                                 <th>Clicks</th>
                                 <th>Created</th>
+                                <th>Expired</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="stat : ${urlStats}">
-                                <td th:text="${stat.originalUrl}">Original URL</td>
+                                <td th:text="${stat.longUrl}">Original URL</td>
                                 <td>
                                     <a th:href="@{${stat.shortUrl}}" th:text="${stat.shortUrl}">Short URL</a>
                                 </td>
                                 <td th:text="${stat.clicks}">0</td>
                                 <td th:text="${#temporals.format(stat.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                                <td th:text="${#temporals.format(stat.expiredAt, 'dd-MM-yyyy HH:mm')}">Date</td>
                             </tr>
                         </tbody>
                     </table>

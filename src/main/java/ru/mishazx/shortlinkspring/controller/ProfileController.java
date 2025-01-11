@@ -10,6 +10,9 @@ import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.service.UserService;
 import ru.mishazx.shortlinkspring.service.UrlService;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.mishazx.shortlinkspring.dto.UserStatistics;
+import ru.mishazx.shortlinkspring.dto.UrlStats;
+import java.util.List;
 
 @Controller
 @RequestMapping("/profile")
@@ -25,9 +28,12 @@ public class ProfileController {
             User user = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found: " + userDetails.getUsername()));
             
+            UserStatistics stats = urlService.getUserStatistics(user.getUsername());
+            List<UrlStats> urlStats = urlService.getUserUrlStats(user.getUsername());
+            
             model.addAttribute("user", user);
-            model.addAttribute("urlStats", urlService.getUserStats(user.getUsername()));
-            model.addAttribute("totalClicks", user.getTotalClicks());
+            model.addAttribute("urlStats", urlStats);
+            model.addAttribute("totalClicks", stats.getTotalClicks());
             
             return "profile/index";
         } catch (Exception e) {

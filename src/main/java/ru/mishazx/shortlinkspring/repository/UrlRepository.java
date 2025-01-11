@@ -27,4 +27,13 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
     List<Url> findByClickLimitReached();
 
     List<Url> findAllByUserOrderByCreatedAtDesc(User user);
+
+    @Query("SELECT COUNT(u) FROM Url u WHERE u.user.username = :username")
+    long countByUsername(@Param("username") String username);
+
+    @Query("SELECT COALESCE(SUM(u.clickCount), 0) FROM Url u WHERE u.user.username = :username")
+    long sumClicksByUsername(@Param("username") String username);
+
+    @Query("SELECT u FROM Url u WHERE u.user.username = :username ORDER BY u.createdAt DESC")
+    List<Url> findByUsername(@Param("username") String username);
 } 

@@ -6,9 +6,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class UserStats {
+public class UrlStats {
     private String longUrl;
     private String shortUrl;
-    private Long clicks;
+    private Integer clicks;
     private LocalDateTime createdAt;
+    private LocalDateTime expiredAt;
 } 

@@ -10,12 +10,14 @@ import ru.mishazx.shortlinkspring.model.Url;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.repository.UrlRepository;
 import ru.mishazx.shortlinkspring.service.UserService;
-import ru.mishazx.shortlinkspring.dto.UserStats;
+import ru.mishazx.shortlinkspring.dto.UserStatistics;
+import ru.mishazx.shortlinkspring.dto.UrlStats;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -86,12 +88,24 @@ public class UrlService {
         return urlRepository.sumClickCountByUser(user);
     }
 
-    public UserStats getUserStats(String username) {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
-        long activeUrls = urlRepository.countByUser(user);
-        long totalClicks = user.getTotalClicks();
-        return new UserStats(activeUrls, totalClicks);
+    public UserStatistics getUserStatistics(String username) {
+        long activeUrls = urlRepository.countByUsername(username);
+        long totalClicks = urlRepository.sumClicksByUsername(username);
+        return UserStatistics.builder()
+                .activeUrls(activeUrls)
+                .totalClicks(totalClicks)
+                .build();
+    }
+
+    public List<UrlStats> getUserUrlStats(String username) {
+        return urlRepository.findByUsername(username).stream()
+                .map(url -> UrlStats.builder()
+                        .longUrl(url.getOriginalUrl())
+                        .shortUrl(url.getShortUrl())
+                        .clicks(Integer.valueOf(url.getClickCount()))
+                        .createdAt(url.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public void deleteUrl(Long urlId, User user) {
