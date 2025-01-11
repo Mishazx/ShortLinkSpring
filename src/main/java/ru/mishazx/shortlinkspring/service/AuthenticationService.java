@@ -38,7 +38,7 @@ public class AuthenticationService implements UserDetailsService {
             String email = oauth2User.getEmail();
             String provider = oauth2Auth.getAuthorizedClientRegistrationId();
             String providerId = oauth2User.getId();
-            String username = oauth2User.getName();
+            String username = oauth2User.getAttributes().get("username").toString();
             
             // Сначала пробуем найти по providerId
             Optional<User> userByProvider = userService.findByProviderId(provider, providerId);
@@ -63,7 +63,7 @@ public class AuthenticationService implements UserDetailsService {
             });
 
             return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername()) // Используем username вместо email
+                .username(user.getUsername())
                 .password("")
                 .authorities("ROLE_USER")
                 .build();

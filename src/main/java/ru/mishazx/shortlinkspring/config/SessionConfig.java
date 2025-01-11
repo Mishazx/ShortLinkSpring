@@ -34,7 +34,7 @@ public class SessionConfig extends AbstractHttpSessionApplicationInitializer {
     public CookieSerializer cookieSerializer() {
         DefaultCookieSerializer serializer = new DefaultCookieSerializer();
         serializer.setSameSite("Lax");
-        serializer.setUseSecureCookie(true); // для HTTPS
+        serializer.setUseSecureCookie(true);
         serializer.setUseHttpOnlyCookie(true);
         return serializer;
     }
