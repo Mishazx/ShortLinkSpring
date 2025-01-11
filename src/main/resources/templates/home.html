@@ -4,102 +4,72 @@
       layout:decorate="~{layout}">
 <head>
     <title>Home</title>
-    <style>
-        .welcome-container {
-            max-width: 800px;
-            margin: 40px auto;
-            text-align: center;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .feature-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .feature-icon {
-            font-size: 2em;
-            margin-bottom: 15px;
-            color: var(--link-color);
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--link-color);
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="welcome-container">
-            <!-- Для авторизованных пользователей -->
-            <div th:if="${#authorization.expression('isAuthenticated()')}" class="card">
-                <h1>Welcome back, <span th:text="${#authentication.name}">User</span>!</h1>
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number" th:text="${urlCount}">0</div>
-                        <div>Active Links</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" th:text="${totalClicks}">0</div>
-                        <div>Total Clicks</div>
-                    </div>
-
+<div layout:fragment="content">
+    <div class="container mt-5">
+        <!-- Authenticated users -->
+        <div th:if="${#authorization.expression('isAuthenticated()')}" class="card p-4 shadow">
+            <h1 class="text-center">Welcome back, <span th:text="${#authentication.name}">User</span>!</h1>
+            <div class="row text-center mt-4">
+                <div class="col">
+                    <div class="h4" th:text="${urlCount}">0</div>
+                    <p>Active Links</p>
                 </div>
-                <p style="margin-top: 20px;">
-                    <a href="/urls/create" class="btn">Create New Short Link</a>
-                </p>
+                <div class="col">
+                    <div class="h4" th:text="${totalClicks}">0</div>
+                    <p>Total Clicks</p>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="/urls/create" class="btn btn-primary">Create New Short Link</a>
+            </div>
+        </div>
+
+        <!-- Non-authenticated users -->
+        <div th:unless="${#authorization.expression('isAuthenticated()')}" class="text-center">
+            <h1>Welcome to the URL Shortener Program</h1>
+            <p>Create short, memorable links for your long URLs</p>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-link fa-2x mb-3 text-primary"></i>
+                            <h5 class="card-title">Short Links</h5>
+                            <p class="card-text">Create compact URLs that are easy to share</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-chart-line fa-2x mb-3 text-success"></i>
+                            <h5 class="card-title">Click Tracking</h5>
+                            <p class="card-text">Track how many times your links are clicked</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-clock fa-2x mb-3 text-warning"></i>
+                            <h5 class="card-title">Expiration Control</h5>
+                            <p class="card-text">Set expiration dates for your links</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Для неавторизованных пользователей -->
-            <div th:unless="${#authorization.expression('isAuthenticated()')}">
-                <h1>Welcome to URL Shortener</h1>
-                <p>Create short, memorable links for your long URLs</p>
-                
-                <div class="features">
-                    <div class="feature-card">
-                        <i class="fas fa-link feature-icon"></i>
-                        <h3>Short Links</h3>
-                        <p>Create compact URLs that are easy to share</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-chart-line feature-icon"></i>
-                        <h3>Track Clicks</h3>
-                        <p>Monitor how many times your links are clicked</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-clock feature-icon"></i>
-                        <h3>Expiration Control</h3>
-                        <p>Set expiration dates for your links</p>
-                    </div>
-                </div>
-
-                <div style="margin-top: 40px;">
-                    <a href="/auth/register" class="btn">Get Started</a>
-                </div>
+            <div class="mt-4">
+                <a href="/auth/register" class="btn btn-primary">Get Started</a>
             </div>
         </div>
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
