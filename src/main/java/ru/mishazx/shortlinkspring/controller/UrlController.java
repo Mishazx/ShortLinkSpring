@@ -1,5 +1,6 @@
 package ru.mishazx.shortlinkspring.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,8 @@ import ru.mishazx.shortlinkspring.service.UrlService;
 import ru.mishazx.shortlinkspring.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.ResponseEntity;
+//import javax.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,12 +36,15 @@ public class UrlController {
     }
 
     @GetMapping("/list")
-    public String listUrls(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+    public String listUrls(Model model, @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request) {
         User user = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
         
         List<Url> urls = urlService.findAllByUser(user);
         model.addAttribute("urls", urls);
+
+        String fullUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath() + "/url";
+        model.addAttribute("serverUrl", fullUrl);
         return "url/list";
     }
 
@@ -89,5 +95,28 @@ public class UrlController {
 
         urlService.deleteUrl(urlId, user);
         return "redirect:/url/list";
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUrl(@RequestParam Long urlId,
+                                     @RequestParam(required = false) Integer clickLimit,
+                                     @RequestParam(required = false) Integer expirationHours,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            User user = userService.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
+            
+            // Вычисляем время истечения, если указано
+            LocalDateTime expiresAt = null;
+            if (expirationHours != null && expirationHours > 0) {
+                expiresAt = LocalDateTime.now().plusHours(expirationHours);
+            }
+
+            urlService.updateUrl(urlId, user, clickLimit, expiresAt);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error updating URL: ", e);
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 } 

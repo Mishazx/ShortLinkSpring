@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 import ru.mishazx.shortlinkspring.repository.UserRepository;
+import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
 
 import java.util.Optional;
 
@@ -50,5 +51,23 @@ public class UserService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    public User processOAuthPostLogin(CustomOAuth2User oauth2User) {
+        String email = oauth2User.getEmail();
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        
+        if (existingUser.isEmpty()) {
+            User newUser = User.builder()
+                .email(email)
+                .username(oauth2User.getName())
+                .provider(AuthProvider.valueOf(oauth2User.getProvider().toUpperCase()))
+                .providerId(oauth2User.getId())
+                .totalClicks(0L)
+                .build();
+            return userRepository.save(newUser);
+        }
+        
+        return existingUser.get();
     }
 } 

@@ -16,11 +16,15 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import ru.mishazx.shortlinkspring.service.AuthenticationService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-//import org.springframework.security.config.annotation.web.configuration.SessionCreationPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.mishazx.shortlinkspring.service.AuthenticationService;
+import ru.mishazx.shortlinkspring.service.OAuth2UserProcessingService;
+import ru.mishazx.shortlinkspring.service.VkOAuth2UserService;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +32,10 @@ import org.springframework.security.web.context.SecurityContextRepository;
 public class SecurityConfig {
 
     private final AuthenticationService authenticationService;
+    private final OAuth2UserProcessingService oAuth2UserProcessingService;
+
+    @Autowired
+    private VkOAuth2UserService vkOAuth2UserService;
 
     @Bean
     public SecurityContextRepository securityContextRepository() {
@@ -54,10 +62,9 @@ public class SecurityConfig {
                 .loginPage("/auth/login")
                 .defaultSuccessUrl("/", true)
                 .userInfoEndpoint(userInfo -> userInfo
-                    .userService(oauth2UserService())
+                    .userService(oAuth2UserProcessingService)
                 )
                 .successHandler((request, response, authentication) -> {
-                    OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
                     UserDetails userDetails = authenticationService.authenticateUser(authentication);
                     
                     Authentication newAuth = new UsernamePasswordAuthenticationToken(
@@ -67,11 +74,6 @@ public class SecurityConfig {
                     );
                     
                     SecurityContextHolder.getContext().setAuthentication(newAuth);
-                    
-                    request.getSession(true).setAttribute(
-                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                        SecurityContextHolder.getContext()
-                    );
                     
                     response.sendRedirect("/");
                 })
@@ -90,18 +92,9 @@ public class SecurityConfig {
             )
             .rememberMe(remember -> remember
                 .key("uniqueAndSecret")
-                .tokenValiditySeconds(86400) // 24 часа
+                .tokenValiditySeconds(86400)
             );
 
         return http.build();
-    }
-
-    private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
-        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
-        
-        return userRequest -> {
-            OAuth2User oauth2User = delegate.loadUser(userRequest);
-            return oauth2User;
-        };
     }
 }

@@ -53,10 +53,19 @@ public class UrlService {
     @Transactional
     public String getOriginalUrl(String shortUrl) {
         Url url = urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(() -> new RuntimeException("URL not found"));
+                .orElseThrow(() -> {
+                    logger.warn("Attempt to access non-existent short URL: {}", shortUrl);
+                    throw new UrlNotFoundException("URL not found");
+                });
 
-        if (url.isExpired() || url.isClickLimitReached()) {
-            throw new RuntimeException("URL has expired or reached click limit");
+        if (url.isExpired()) {
+            logger.info("Attempt to access expired URL: {}", shortUrl);
+            throw new UrlExpiredException("URL has expired");
+        }
+
+        if (url.isClickLimitReached()) {
+            logger.info("Attempt to access URL with exceeded click limit: {}", shortUrl);
+            throw new ClickLimitExceededException("URL has reached its click limit");
         }
 
         url.incrementClickCount();
@@ -94,5 +103,43 @@ public class UrlService {
         }
 
         urlRepository.delete(url);
+    }
+
+    @Transactional
+    public Url updateUrl(Long urlId, User user, Integer clickLimit, LocalDateTime expiresAt) {
+        Url url = urlRepository.findById(urlId)
+                .orElseThrow(() -> new RuntimeException("URL not found"));
+
+        if (!url.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You don't have permission to update this URL");
+        }
+
+        if (clickLimit != null) {
+            url.setClickLimit(clickLimit);
+        }
+        
+        if (expiresAt != null) {
+            url.setExpiresAt(expiresAt);
+        }
+
+        return urlRepository.save(url);
+    }
+
+    public class UrlNotFoundException extends RuntimeException {
+        public UrlNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+    public class UrlExpiredException extends RuntimeException {
+        public UrlExpiredException(String message) {
+            super(message);
+        }
+    }
+
+    public class ClickLimitExceededException extends RuntimeException {
+        public ClickLimitExceededException(String message) {
+            super(message);
+        }
     }
 } 

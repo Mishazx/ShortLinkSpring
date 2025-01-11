@@ -6,12 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
-
-import java.util.Map;
+import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,56 +31,44 @@ public class AuthenticationService implements UserDetailsService {
     }
 
     public UserDetails authenticateUser(Authentication authentication) {
-        if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
-            String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+        if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
+            CustomOAuth2User oauth2User = (CustomOAuth2User) oauth2Auth.getPrincipal();
             
-            final String email;
-            final String name;
+            String email = oauth2User.getEmail();
+            String provider = oauth2Auth.getAuthorizedClientRegistrationId();
+            String providerId = oauth2User.getId();
+            String username = oauth2User.getName();
             
-            switch (registrationId.toLowerCase()) {
-                case "github" -> {
-                    email = oauth2User.getAttribute("email");
-                    name = oauth2User.getAttribute("login");
+            // Сначала пробуем найти по providerId
+            Optional<User> userByProvider = userService.findByProviderId(provider, providerId);
+            User user = userByProvider.orElseGet(() -> {
+                // Если не нашли по providerId, ищем по email
+                Optional<User> userByEmail = userService.findByEmail(email);
+                if (userByEmail.isPresent()) {
+                    User existingUser = userByEmail.get();
+                    existingUser.setProvider(AuthProvider.valueOf(provider.toUpperCase()));
+                    existingUser.setProviderId(providerId);
+                    return userService.save(existingUser);
                 }
-                case "yandex" -> {
-                    email = oauth2User.getAttribute("default_email");
-                    name = oauth2User.getAttribute("login");
-                    
-                    if (email == null || name == null) {
-                        Map<String, Object> attributes = oauth2User.getAttributes();
-                        throw new IllegalStateException("Missing required attributes from Yandex. Received: " + attributes);
-                    }
-                }
-                default -> throw new IllegalArgumentException("Unsupported provider: " + registrationId);
-            }
+                
+                // Если пользователя нет, создаем нового
+                return userService.save(User.builder()
+                    .email(email)
+                    .username(username)
+                    .provider(AuthProvider.valueOf(provider.toUpperCase()))
+                    .providerId(providerId)
+                    .totalClicks(0L)
+                    .build());
+            });
 
-            if (name == null) {
-                throw new IllegalStateException("Username cannot be null");
-            }
-
-            final String finalEmail = email != null ? email : name + "@" + registrationId + ".user";
-            
-            User user = userService.findByEmail(finalEmail)
-                    .orElseGet(() -> {
-                        return userService.findByUsername(name)
-                                .orElseGet(() -> {
-                                    User newUser = User.builder()
-                                            .username(name)
-                                            .email(finalEmail)
-                                            .provider(AuthProvider.valueOf(registrationId.toUpperCase()))
-                                            .totalClicks(0L)
-                                            .build();
-                                    return userService.save(newUser);
-                                });
-                    });
-
-            return org.springframework.security.core.userdetails.User
-                    .withUsername(user.getUsername())
-                    .password(user.getPassword() != null ? user.getPassword() : "")
-                    .roles("USER")
-                    .build();
+            return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername()) // Используем username вместо email
+                .password("")
+                .authorities("ROLE_USER")
+                .build();
         }
-        
+
         throw new IllegalArgumentException("Unsupported authentication type");
     }
 } 
