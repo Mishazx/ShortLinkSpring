@@ -5,61 +5,6 @@
 <head>
     <title>Мои ссылки</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .empty-state i {
-            font-size: 2.5rem;
-            color: #6c757d;
-        }
-
-        .expired {
-            opacity: 0.7;
-        }
-
-        .expired-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: red;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .url-item {
-            position: relative;
-        }
-
-        .short-url {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .short-url:hover {
-            text-decoration: underline;
-        }
-
-        .url-stats {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .url-stats span {
-            display: inline-block;
-            margin-right: 15px;
-        }
-
-        .clicks-warning {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -70,51 +15,45 @@
 
         <div class="row g-4">
             <div th:if="${urls == null || urls.empty}" class="col-12">
-                <div class="card empty-state">
+                <div class="card text-center">
                     <div class="card-body">
-                        <i class="bi bi-link-45deg"></i>
-                        <h5 class="text-muted mb-0">У вас пока нет созданных ссылок</h5>
+                        <i class="bi bi-link-45deg fs-1"></i>
+                        <h5 class="card-title">У вас пока нет созданных ссылок</h5>
                     </div>
                 </div>
             </div>
 
             <div th:each="url : ${urls}" class="col-12">
-                <div class="card url-item" th:classappend="${url.expired || url.clickLimitReached ? 'expired' : ''}">
-                    <div th:if="${url.expired || url.clickLimitReached}" class="expired-badge">
-                        ИСТЕКЛА
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <a th:href="${url.shortUrl}" th:text="${url.shortUrl}" target="_blank">
+                                <i class="bi bi-box-arrow-up-right ms-2" style="font-size: 0.8em;"></i>
+                            </a>
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="card-title mb-2">
-                                    <a th:href="${url.shortUrl}" th:text="${url.shortUrl}" target="_blank"
-                                       class="short-url">
-                                        <i class="bi bi-box-arrow-up-right ms-2" style="font-size: 0.8em;"></i>
-                                    </a>
-                                </h5>
-                                <p class="card-text text-muted" th:text="${url.originalUrl}"></p>
-                            </div>
-                            <form th:action="@{/url/delete}" method="post" class="ms-3">
+                        <p class="card-text text-muted" th:text="${url.originalUrl}"></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <form th:action="@{/url/delete}" method="post">
                                 <input type="hidden" name="urlId" th:value="${url.id}" />
                                 <button type="submit" class="btn btn-outline-danger btn-sm">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
-                        </div>
-                        <div class="url-stats">
-                            <span>
-                                <i class="bi bi-clock"></i>
-                                Создана: <span th:text="${#temporals.format(url.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
-                            </span>
-                            <span th:if="${url.expiresAt}">
-                                <i class="bi bi-hourglass-split"></i>
-                                Истекает: <span th:text="${#temporals.format(url.expiresAt, 'dd.MM.yyyy HH:mm')}"></span>
-                            </span>
-                            <span>
-                                <i class="bi bi-graph-up"></i>
-                                Клики: <span th:class="${url.clickCount >= url.clickLimit && url.clickLimit != -1 ? 'clicks-warning' : ''}"
-                                             th:text="${url.clickCount + ' / ' + (url.clickLimit == -1 ? '∞' : url.clickLimit)}"></span>
-                            </span>
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="bi bi-clock me-2">Дата создания</i>
+                                <span th:text="${#temporals.format(url.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                                <span th:if="${url.expiresAt}">
+                                    <i class="bi bi-hourglass-split ms-3 me-2">Дата истечения</i>
+                                    <span th:text="${#temporals.format(url.expiresAt, 'dd.MM.yyyy HH:mm')}"></span>
+                                </span>
+                                <span class="ms-3">
+                                    <i class="bi bi-graph-up me-2">Количество кликов</i>
+                                    <span th:class="${url.clickCount >= url.clickLimit && url.clickLimit != -1 ? 'text-danger' : ''}"
+                                          th:text="${url.clickCount + ' / ' + (url.clickLimit == -1 ? '∞' : url.clickLimit)}"></span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,3 +66,4 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </body>
 </html>
+
