@@ -1,15 +1,16 @@
 package ru.mishazx.shortlinkspring.security;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
 public class CustomOAuth2User implements OAuth2User, Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     private final Map<String, Object> attributes;
     private final Collection<? extends GrantedAuthority> authorities;
     private final String name;
@@ -38,7 +39,6 @@ public class CustomOAuth2User implements OAuth2User, Serializable {
     public String getEmail() {
         Object email = attributes.get("email");
         if (email == null) {
-            // Если email отсутствует, создаем его из имени и провайдера
             return getName() + "@" + getProvider() + ".user";
         }
         return email.toString();
@@ -51,4 +51,4 @@ public class CustomOAuth2User implements OAuth2User, Serializable {
     public String getProvider() {
         return attributes.get("clientRegistration").toString();
     }
-} 
+}
