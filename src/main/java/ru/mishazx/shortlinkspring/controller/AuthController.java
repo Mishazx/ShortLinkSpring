@@ -1,41 +1,53 @@
 package ru.mishazx.shortlinkspring.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.mishazx.shortlinkspring.service.AuthService;
-import ru.mishazx.shortlinkspring.model.User;
+import ru.mishazx.shortlinkspring.service.UserService;
+import lombok.RequiredArgsConstructor;
 
-@RestController
+@Controller
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @Autowired
-    private AuthService authService;
+    private final UserService userService;
+
+    @GetMapping("/login")
+    public String login(Model model, @RequestParam(required = false) String error,
+                        @RequestParam(required = false) String success) {
+        if (error != null) {
+            model.addAttribute("error", "Invalid username or password");
+        }
+        if (success != null) {
+            model.addAttribute("success", "Registration successful! Please login");
+        }
+        return "auth/login";
+    }
+
+    @GetMapping("/register")
+    public String registerForm() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            return "redirect:/";
+        }
+        return "auth/register";
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        User registeredUser = authService.register(user);
-        return ResponseEntity.ok(registeredUser);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        boolean isAuthenticated = authService.authenticate(user);
-        if (isAuthenticated) {
-            return ResponseEntity.ok("Login successful");
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
+    public String register(@RequestParam String username,
+                           @RequestParam String email,
+                           @RequestParam String password) {
+        try {
+            userService.registerUser(username, email, password);
+            return "redirect:/auth/login?success";
+        } catch (RuntimeException e) {
+            return "redirect:/auth/login?error=" + e.getMessage();
         }
     }
-
-    @GetMapping("/user/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
-        User user = authService.findById(id);
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-} 
+}
