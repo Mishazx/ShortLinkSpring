@@ -1,14 +1,20 @@
 package ru.mishazx.shortlinkspring.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 import ru.mishazx.shortlinkspring.repository.UserRepository;
 import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
+import ru.mishazx.shortlinkspring.dto.UserRankingDTO;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -64,5 +70,22 @@ public class UserService {
                             .build();
                     return save(newUser);
                 });
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserRankingDTO> getTopUsers(int limit) {
+        List<User> topUsers = userRepository.findTopUsersByClicks(PageRequest.of(0, limit));
+        
+        return IntStream.range(0, topUsers.size())
+                .mapToObj(i -> {
+                    User user = topUsers.get(i);
+                    return new UserRankingDTO(
+                        user.getUsername(),
+                        user.getTotalClicks(),
+                        user.getUrls().size(),
+                        i + 1
+                    );
+                })
+                .collect(Collectors.toList());
     }
 } 

@@ -26,21 +26,16 @@ public class UrlCleanupService {
     @Transactional
     public void cleanupExpiredUrls() {
         logger.info("Starting URL cleanup task");
-        
-        // Находим все истекшие ссылки
+
         List<Url> expiredUrls = urlRepository.findExpiredUrls(LocalDateTime.now());
-        
-        // Находим ссылки с исчерпанным лимитом кликов
+
         List<Url> clickLimitReachedUrls = urlRepository.findByClickLimitReached();
-        
-        // Объединяем списки для обработки
+
         List<Url> urlsToDelete = new ArrayList<>();
         urlsToDelete.addAll(expiredUrls);
         urlsToDelete.addAll(clickLimitReachedUrls);
-        
-        // Удаляем ссылки, но сохраняем статистику
+
         for (Url url : urlsToDelete) {
-            // Статистика уже сохранена в поле totalClicks пользователя
             urlRepository.delete(url);
         }
         

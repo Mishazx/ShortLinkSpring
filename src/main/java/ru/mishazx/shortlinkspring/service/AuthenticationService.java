@@ -34,23 +34,11 @@ public class AuthenticationService implements UserDetailsService {
     public UserDetails authenticateUser(Authentication authentication) {
         if (authentication instanceof OAuth2AuthenticationToken) {
             CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
+            User user = userService.processOAuthUser(oauth2User);
             
-            // Используем username из CustomOAuth2User
-            String username = oauth2User.getUsername();
-            String email = oauth2User.getEmail(); // теперь этот метод доступен
-            
-            User user = userService.findByUsername(username)
-                .orElseGet(() -> {
-                    User newUser = User.builder()
-                            .username(username)
-                            .email(email)
-                            .build();
-                    return userService.save(newUser);
-                });
-
             return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                "", // пустой пароль для OAuth2 пользователей
+                "",
                 true,
                 true,
                 true,
@@ -58,8 +46,6 @@ public class AuthenticationService implements UserDetailsService {
                 Collections.emptyList()
             );
         }
-        
-        // Обработка других типов аутентификации...
         return null;
     }
 } 

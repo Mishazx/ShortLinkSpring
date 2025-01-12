@@ -36,27 +36,7 @@ import ru.mishazx.shortlinkspring.security.CustomOAuth2UserService;
 public class SecurityConfig {
 
     private final AuthenticationService authenticationService;
-    private final OAuth2UserProcessingService oAuth2UserProcessingService;
-    @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
-
-    @Bean
-    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
-        DefaultAuthorizationCodeTokenResponseClient tokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
-        
-        OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter = 
-            new OAuth2AccessTokenResponseHttpMessageConverter();
-        tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(new VkOAuth2AccessTokenResponseConverter());
-        
-        RestTemplate restTemplate = new RestTemplate(Arrays.asList(
-            new FormHttpMessageConverter(),
-            tokenResponseHttpMessageConverter
-        ));
-        
-        tokenResponseClient.setRestOperations(restTemplate);
-        
-        return tokenResponseClient;
-    }
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -68,9 +48,12 @@ public class SecurityConfig {
                     "/images/**", 
                     "/webjars/**",
                     "/favicon.ico",
-                    "/error"
+                    "/error",
+                    "/",
+                    "/auth/**",
+                    "/oauth2/**",
+                    "/ranking"
                 ).permitAll()
-                .requestMatchers("/", "/auth/**", "/oauth2/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -81,53 +64,29 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/auth/login")
-                .defaultSuccessUrl("/", true)
-                .tokenEndpoint(token -> token
-                    .accessTokenResponseClient(accessTokenResponseClient())
-                )
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
-                .failureHandler((request, response, exception) -> {
-                    exception.printStackTrace();
-                    String errorMessage = "Authentication failed";
-                    if (exception != null && exception.getMessage() != null) {
-                        errorMessage = exception.getMessage();
-                    }
-                    response.sendRedirect("/auth/login?error=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8));
-                })
                 .successHandler((request, response, authentication) -> {
-                    try {
-                        UserDetails userDetails = authenticationService.authenticateUser(authentication);
-                        Authentication newAuth = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                        );
-                        SecurityContextHolder.getContext().setAuthentication(newAuth);
-                        response.sendRedirect("/");
-                    } catch (Exception e) {
-                        response.sendRedirect("/auth/login?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
-                    }
+                    UserDetails userDetails = authenticationService.authenticateUser(authentication);
+                    Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(newAuth);
+                    response.sendRedirect("/");
                 })
             )
             .logout(logout -> logout
                 .logoutUrl("/auth/logout")
                 .logoutSuccessUrl("/")
+                .deleteCookies("JSESSIONID")
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(1)
-                .expiredUrl("/auth/login?expired")
-            )
-            .rememberMe(remember -> remember
-                .key("uniqueAndSecret")
-                .tokenValiditySeconds(86400)
+                .permitAll()
             );
-
+        
         return http.build();
     }
 }

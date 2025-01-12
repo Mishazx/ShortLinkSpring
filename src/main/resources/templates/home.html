@@ -43,11 +43,47 @@
                         <tbody>
                             <tr th:each="stat : ${urlStats}">
                                 <td th:text="${stat.shortUrl}"></td>
-                                <td th:text="${stat.originalUrl}"></td>
+                                <td th:text="${stat.longUrl}"></td>
                                 <td th:text="${stat.clicks}"></td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- После таблицы со статистикой -->
+            <div class="mt-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Топ пользователей</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Место</th>
+                                        <th>Пользователь</th>
+                                        <th>Всего кликов</th>
+                                        <th>Количество ссылок</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${topUsers}" th:class="${user.username == username ? 'table-primary' : ''}">
+                                        <td>
+                                            <span th:if="${user.rank == 1}" class="text-warning">
+                                                <i class="fas fa-trophy"></i>
+                                            </span>
+                                            <span th:text="${user.rank}">1</span>
+                                        </td>
+                                        <td th:text="${user.username}">User</td>
+                                        <td th:text="${user.totalClicks}">0</td>
+                                        <td th:text="${user.urlCount}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

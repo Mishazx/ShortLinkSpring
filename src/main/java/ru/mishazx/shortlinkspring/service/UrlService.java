@@ -89,11 +89,12 @@ public class UrlService {
     }
 
     public UserStatistics getUserStatistics(String username) {
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
         long activeUrls = urlRepository.countByUsername(username);
-        long totalClicks = urlRepository.sumClicksByUsername(username);
         return UserStatistics.builder()
                 .activeUrls(activeUrls)
-                .totalClicks(totalClicks)
+                .totalClicks(user.getTotalClicks())
                 .build();
     }
 
@@ -108,6 +109,7 @@ public class UrlService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteUrl(Long urlId, User user) {
         Url url = urlRepository.findById(urlId)
                 .orElseThrow(() -> new RuntimeException("URL not found"));
