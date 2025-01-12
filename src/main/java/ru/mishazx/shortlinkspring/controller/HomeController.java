@@ -25,9 +25,9 @@ public class HomeController {
             UserStatistics stats = urlService.getUserStatistics(username);
             List<UrlStats> urlStats = urlService.getUserUrlStats(username);
             
-            model.addAttribute("stats", stats);
-            model.addAttribute("urlStats", urlStats);
+            model.addAttribute("urlCount", stats.getActiveUrls());
             model.addAttribute("totalClicks", stats.getTotalClicks());
+            model.addAttribute("urlStats", urlStats);
         }
         return "home";
     }
