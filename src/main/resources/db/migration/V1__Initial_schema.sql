@@ -1,23 +1,57 @@
-CREATE TABLE IF NOT EXISTS users (
+-- Таблицы для пользователей и URL
+CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    total_clicks BIGINT NOT NULL DEFAULT 0
+    email VARCHAR(255),
+    password VARCHAR(255),
+    provider VARCHAR(20),
+    github_id VARCHAR(255),
+    yandex_id VARCHAR(255),
+    vk_id VARCHAR(255),
+    total_clicks BIGINT DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS urls (
+CREATE TABLE urls (
     id BIGSERIAL PRIMARY KEY,
-    original_url VARCHAR(2048) NOT NULL,
+    original_url TEXT NOT NULL,
     short_url VARCHAR(255) NOT NULL UNIQUE,
-    user_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    expires_at TIMESTAMP,
-    click_limit INTEGER NOT NULL DEFAULT -1,
-    click_count INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    user_id BIGINT REFERENCES users(id),
+    click_count INTEGER DEFAULT 0,
+    click_limit INTEGER DEFAULT -1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP
 );
 
--- Создаем индексы для оптимизации
-CREATE INDEX IF NOT EXISTS idx_urls_short_url ON urls(short_url);
-CREATE INDEX IF NOT EXISTS idx_urls_user_id ON urls(user_id);
-CREATE INDEX IF NOT EXISTS idx_urls_expires_at ON urls(expires_at); 
+-- Индексы для основных таблиц
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_github_id ON users(github_id);
+CREATE INDEX idx_users_yandex_id ON users(yandex_id);
+CREATE INDEX idx_users_vk_id ON users(vk_id);
+
+CREATE INDEX idx_urls_short_url ON urls(short_url);
+CREATE INDEX idx_urls_user_id ON urls(user_id);
+
+-- Таблицы для Spring Session JDBC
+CREATE TABLE SPRING_SESSION (
+    PRIMARY_ID CHAR(36) NOT NULL,
+    SESSION_ID CHAR(36) NOT NULL,
+    CREATION_TIME BIGINT NOT NULL,
+    LAST_ACCESS_TIME BIGINT NOT NULL,
+    MAX_INACTIVE_INTERVAL INT NOT NULL,
+    EXPIRY_TIME BIGINT NOT NULL,
+    PRINCIPAL_NAME VARCHAR(100),
+    CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID)
+);
+
+CREATE UNIQUE INDEX SPRING_SESSION_IX1 ON SPRING_SESSION (SESSION_ID);
+CREATE INDEX SPRING_SESSION_IX2 ON SPRING_SESSION (EXPIRY_TIME);
+CREATE INDEX SPRING_SESSION_IX3 ON SPRING_SESSION (PRINCIPAL_NAME);
+
+CREATE TABLE SPRING_SESSION_ATTRIBUTES (
+    SESSION_PRIMARY_ID CHAR(36) NOT NULL,
+    ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
+    ATTRIBUTE_BYTES BYTEA NOT NULL,
+    CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
+    CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE
+); 

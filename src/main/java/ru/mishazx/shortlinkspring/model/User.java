@@ -9,11 +9,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +21,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column
     private String email;
 
     private String password;
@@ -30,12 +29,17 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
-    private String providerId;
+    // OAuth IDs
+    private String githubId;
+    private String yandexId;
+    private String vkId;
 
     @Column(name = "total_clicks")
+    @Builder.Default
     private Long totalClicks = 0L;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Url> urls = new ArrayList<>();
 
     public void incrementTotalClicks() {

@@ -3,10 +3,10 @@ package ru.mishazx.shortlinkspring.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.mishazx.shortlinkspring.dto.UserRegistrationDto;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 import ru.mishazx.shortlinkspring.repository.UserRepository;
-import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
 
 import java.util.Optional;
 
@@ -17,6 +17,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
@@ -25,49 +29,72 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<User> findByProviderId(String providerName, String providerId) {
-        AuthProvider provider = AuthProvider.valueOf(providerName.toUpperCase());
-        return userRepository.findByProviderAndProviderId(provider, providerId);
-    }
-
-    public User registerUser(String username, String email, String password) {
-        if (userRepository.findByUsername(username).isPresent()) {
+    public User registerNewUser(UserRegistrationDto registrationDto) {
+        if (userRepository.existsByUsername(registrationDto.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.existsByEmail(registrationDto.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
         User user = User.builder()
-                .username(username)
-                .email(email)
-                .password(passwordEncoder.encode(password))
+                .username(registrationDto.getUsername())
+                .email(registrationDto.getEmail())
+                .password(passwordEncoder.encode(registrationDto.getPassword()))
                 .provider(AuthProvider.LOCAL)
-                .totalClicks(0L)
                 .build();
 
         return userRepository.save(user);
     }
 
-    public User processOAuthPostLogin(CustomOAuth2User oauth2User) {
-        String email = oauth2User.getEmail();
+    public User processOAuthUser(String email, String name, AuthProvider provider, String providerId) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         
-        if (existingUser.isEmpty()) {
-            User newUser = User.builder()
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            // Обновляем ID провайдера в зависимости от типа
+            updateProviderInfo(user, provider, providerId);
+            return userRepository.save(user);
+        }
+
+        // Создаем нового пользователя
+        User user = User.builder()
                 .email(email)
-                .username(oauth2User.getName())
-                .provider(AuthProvider.valueOf(oauth2User.getProvider().toUpperCase()))
-                .providerId(oauth2User.getId())
-                .totalClicks(0L)
+                .username(generateUsername(name, email))
+                .provider(provider)
                 .build();
-            return userRepository.save(newUser);
+
+        // Устанавливаем ID провайдера
+        updateProviderInfo(user, provider, providerId);
+        
+        return userRepository.save(user);
+    }
+
+    private void updateProviderInfo(User user, AuthProvider provider, String providerId) {
+        switch (provider) {
+            case GITHUB -> user.setGithubId(providerId);
+            case YANDEX -> user.setYandexId(providerId);
+            case VK -> user.setVkId(providerId);
+        }
+    }
+
+    private String generateUsername(String name, String email) {
+        if (name != null && !name.isEmpty()) {
+            String username = name.replaceAll("\\s+", "").toLowerCase();
+            if (!userRepository.existsByUsername(username)) {
+                return username;
+            }
         }
         
-        return existingUser.get();
+        // Если имя не подходит, используем часть email
+        String baseUsername = email.substring(0, email.indexOf('@')).toLowerCase();
+        String username = baseUsername;
+        int counter = 1;
+        
+        while (userRepository.existsByUsername(username)) {
+            username = baseUsername + counter++;
+        }
+        
+        return username;
     }
 } 

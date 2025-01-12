@@ -17,6 +17,41 @@
                 <p><strong>Total Clicks:</strong> <span th:text="${totalClicks}">0</span></p>
             </div>
 
+            <div class="linked-accounts">
+                <h2>Linked Accounts</h2>
+                <div class="oauth-providers">
+                    <div class="provider-card" th:classappend="${user.githubId != null ? 'linked' : ''}">
+                        <img src="/images/github-logo.svg" alt="GitHub">
+                        <span th:if="${user.githubId != null}">Connected</span>
+                        <a th:unless="${user.githubId != null}" 
+                           th:href="@{/oauth2/authorization/github}" 
+                           class="btn btn-outline-dark">
+                            Connect GitHub
+                        </a>
+                    </div>
+
+                    <div class="provider-card" th:classappend="${user.yandexId != null ? 'linked' : ''}">
+                        <img src="/images/yandex-logo.svg" alt="Yandex">
+                        <span th:if="${user.yandexId != null}">Connected</span>
+                        <a th:unless="${user.yandexId != null}" 
+                           th:href="@{/oauth2/authorization/yandex}" 
+                           class="btn btn-outline-primary">
+                            Connect Yandex
+                        </a>
+                    </div>
+
+                    <div class="provider-card" th:classappend="${user.vkId != null ? 'linked' : ''}">
+                        <img src="/images/vk-logo.svg" alt="VK">
+                        <span th:if="${user.vkId != null}">Connected</span>
+                        <a th:unless="${user.vkId != null}" 
+                           th:href="@{/oauth2/authorization/vk}" 
+                           class="btn btn-outline-primary">
+                            Connect VK
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div class="profile-edit" th:if="${user.provider != null and user.provider.name() == 'LOCAL'}">
                 <h2>Update Profile</h2>
                 <form th:action="@{/profile/update}" method="post">
