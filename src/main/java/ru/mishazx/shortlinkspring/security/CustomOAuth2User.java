@@ -1,54 +1,48 @@
 package ru.mishazx.shortlinkspring.security;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 
-public class CustomOAuth2User implements OAuth2User, Serializable {
-    private static final long serialVersionUID = 1L;
+import java.util.Collection;
+import java.util.Map;
 
-    private final Map<String, Object> attributes;
-    private final Collection<? extends GrantedAuthority> authorities;
-    private final String name;
-
-    public CustomOAuth2User(OAuth2User oauth2User, Map<String, Object> attributes) {
-        this.attributes = new HashMap<>(attributes);
-        this.authorities = oauth2User.getAuthorities();
-        this.name = attributes.get("name").toString();
-    }
+@RequiredArgsConstructor
+public class CustomOAuth2User implements OAuth2User {
+    private final OAuth2User oauth2User;
+    private final String username;
+    private final String registrationId;
 
     @Override
     public Map<String, Object> getAttributes() {
-        return attributes;
+        return oauth2User.getAttributes();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return oauth2User.getAuthorities();
     }
 
     @Override
     public String getName() {
-        return name;
+        return username;
     }
 
     public String getEmail() {
-        Object email = attributes.get("email");
-        if (email == null) {
-            return getName() + "@" + getProvider() + ".user";
-        }
-        return email.toString();
+        Object email = getAttributes().get("email");
+        return email != null ? email.toString() : null;
     }
 
     public String getId() {
-        return attributes.get("id").toString();
+        return getAttributes().get("id").toString();
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getProvider() {
-        return attributes.get("clientRegistration").toString();
+        return registrationId;
     }
 }

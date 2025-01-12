@@ -25,10 +25,12 @@ public class HomeController {
             UserStatistics stats = urlService.getUserStatistics(username);
             List<UrlStats> urlStats = urlService.getUserUrlStats(username);
             
+            model.addAttribute("username", username);
             model.addAttribute("urlCount", stats.getActiveUrls());
             model.addAttribute("totalClicks", stats.getTotalClicks());
             model.addAttribute("urlStats", urlStats);
+            return "home";
         }
-        return "home";
+        return "index";
     }
 } 

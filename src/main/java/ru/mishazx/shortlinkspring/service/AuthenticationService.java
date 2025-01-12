@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -32,43 +33,33 @@ public class AuthenticationService implements UserDetailsService {
 
     public UserDetails authenticateUser(Authentication authentication) {
         if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
-            CustomOAuth2User oauth2User = (CustomOAuth2User) oauth2Auth.getPrincipal();
+            CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
             
-            String email = oauth2User.getEmail();
-            String provider = oauth2Auth.getAuthorizedClientRegistrationId();
-            String providerId = oauth2User.getId();
-            String username = oauth2User.getAttributes().get("username").toString();
+            // Используем username из CustomOAuth2User
+            String username = oauth2User.getUsername();
+            String email = oauth2User.getEmail(); // теперь этот метод доступен
             
-            // Сначала пробуем найти по providerId
-            Optional<User> userByProvider = userService.findByProviderId(provider, providerId);
-            User user = userByProvider.orElseGet(() -> {
-                // Если не нашли по providerId, ищем по email
-                Optional<User> userByEmail = userService.findByEmail(email);
-                if (userByEmail.isPresent()) {
-                    User existingUser = userByEmail.get();
-                    existingUser.setProvider(AuthProvider.valueOf(provider.toUpperCase()));
-                    existingUser.setProviderId(providerId);
-                    return userService.save(existingUser);
-                }
-                
-                // Если пользователя нет, создаем нового
-                return userService.save(User.builder()
-                    .email(email)
-                    .username(username)
-                    .provider(AuthProvider.valueOf(provider.toUpperCase()))
-                    .providerId(providerId)
-                    .totalClicks(0L)
-                    .build());
-            });
+            User user = userService.findByUsername(username)
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .username(username)
+                            .email(email)
+                            .build();
+                    return userService.save(newUser);
+                });
 
-            return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password("")
-                .authorities("ROLE_USER")
-                .build();
+            return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                "", // пустой пароль для OAuth2 пользователей
+                true,
+                true,
+                true,
+                true,
+                Collections.emptyList()
+            );
         }
-
-        throw new IllegalArgumentException("Unsupported authentication type");
+        
+        // Обработка других типов аутентификации...
+        return null;
     }
 } 

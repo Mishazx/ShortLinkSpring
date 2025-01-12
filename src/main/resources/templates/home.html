@@ -3,16 +3,15 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title>Главная</title>
+    <title>Личный кабинет</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 <div layout:fragment="content">
     <div class="container mt-5">
-        <!-- Authenticated users -->
-        <div th:if="${#authorization.expression('isAuthenticated()')}" class="card p-4 shadow">
-            <h1 class="text-center">Добро пожаловать, <span th:text="${#authentication.name}">User</span>!</h1>
+        <div class="card p-4 shadow">
+            <h1 class="text-center">Добро пожаловать, <span th:text="${username}">User</span>!</h1>
             <div class="row text-center mt-4">
                 <div class="col">
                     <div class="h4" th:text="${urlCount}">0</div>
@@ -24,47 +23,32 @@
                 </div>
             </div>
             <div class="text-center mt-4">
-                <a href="/urls/create" class="btn btn-primary">Создать новую короткую ссылку</a>
+                <a href="/urls/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Создать новую короткую ссылку
+                </a>
             </div>
-        </div>
-
-        <!-- Non-authenticated users -->
-        <div th:unless="${#authorization.expression('isAuthenticated()')}" class="text-center">
-            <h1>Приветствуем в программе сокращения URL</h1>
-            <p>Создайте короткие, запоминающиеся ссылки для ваших длинных URL</p>
-
-            <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <i class="fas fa-link fa-2x mb-3 text-primary"></i>
-                            <h5 class="card-title">Короткие ссылки</h5>
-                            <p class="card-text">Создайте компактные URL, которые легко поделиться</p>
-                        </div>
-                    </div>
+            
+            <!-- Таблица со статистикой -->
+            <div class="mt-4" th:if="${not #lists.isEmpty(urlStats)}">
+                <h3>Ваши ссылки</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Короткая ссылка</th>
+                                <th>Оригинальная ссылка</th>
+                                <th>Клики</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="stat : ${urlStats}">
+                                <td th:text="${stat.shortUrl}"></td>
+                                <td th:text="${stat.originalUrl}"></td>
+                                <td th:text="${stat.clicks}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <i class="fas fa-chart-line fa-2x mb-3 text-success"></i>
-                            <h5 class="card-title">Отслеживание кликов</h5>
-                            <p class="card-text">Отслеживайте количество кликов по вашим ссылкам</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <i class="fas fa-clock fa-2x mb-3 text-warning"></i>
-                            <h5 class="card-title">Управление сроком действия</h5>
-                            <p class="card-text">Установите срок действия для ваших ссылок</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <a href="/auth/register" class="btn btn-primary">Начать</a>
             </div>
         </div>
     </div>

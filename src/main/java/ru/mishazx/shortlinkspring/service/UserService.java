@@ -53,21 +53,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User processOAuthPostLogin(CustomOAuth2User oauth2User) {
-        String email = oauth2User.getEmail();
-        Optional<User> existingUser = userRepository.findByEmail(email);
-        
-        if (existingUser.isEmpty()) {
-            User newUser = User.builder()
-                .email(email)
-                .username(oauth2User.getName())
-                .provider(AuthProvider.valueOf(oauth2User.getProvider().toUpperCase()))
-                .providerId(oauth2User.getId())
-                .totalClicks(0L)
-                .build();
-            return userRepository.save(newUser);
-        }
-        
-        return existingUser.get();
+    public User processOAuthUser(CustomOAuth2User oauth2User) {
+        return findByUsername(oauth2User.getUsername())
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .username(oauth2User.getUsername())
+                            .email(oauth2User.getEmail())
+                            .provider(AuthProvider.valueOf(oauth2User.getProvider().toUpperCase()))
+                            .providerId(oauth2User.getId())
+                            .build();
+                    return save(newUser);
+                });
     }
 } 

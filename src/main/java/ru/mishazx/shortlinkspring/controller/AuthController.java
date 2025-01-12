@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.mishazx.shortlinkspring.service.UserService;
 import lombok.RequiredArgsConstructor;
+import ru.mishazx.shortlinkspring.model.User;
 
 @Controller
 @RequestMapping("/auth")

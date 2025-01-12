@@ -9,8 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -22,7 +21,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true)
     private String email;
 
     private String password;
@@ -33,9 +32,11 @@ public class User {
     private String providerId;
 
     @Column(name = "total_clicks")
+    @Builder.Default
     private Long totalClicks = 0L;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Url> urls = new ArrayList<>();
 
     public void incrementTotalClicks() {

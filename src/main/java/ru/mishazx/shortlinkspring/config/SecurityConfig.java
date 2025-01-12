@@ -28,6 +28,7 @@ import ru.mishazx.shortlinkspring.security.VkOAuth2AccessTokenResponseConverter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import ru.mishazx.shortlinkspring.security.CustomOAuth2UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +37,8 @@ public class SecurityConfig {
 
     private final AuthenticationService authenticationService;
     private final OAuth2UserProcessingService oAuth2UserProcessingService;
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
@@ -56,14 +59,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                .requestMatchers("/", "/home").permitAll()
-                .requestMatchers("/auth/login", "/auth/register", "/oauth2/**").permitAll()
-                .requestMatchers("/profile/**").authenticated()
+                .requestMatchers(
+                    "/css/**", 
+                    "/js/**", 
+                    "/images/**", 
+                    "/webjars/**",
+                    "/favicon.ico",
+                    "/error"
+                ).permitAll()
+                .requestMatchers("/", "/auth/**", "/oauth2/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -79,7 +86,7 @@ public class SecurityConfig {
                     .accessTokenResponseClient(accessTokenResponseClient())
                 )
                 .userInfoEndpoint(userInfo -> userInfo
-                    .userService(oAuth2UserProcessingService)
+                    .userService(customOAuth2UserService)
                 )
                 .failureHandler((request, response, exception) -> {
                     exception.printStackTrace();
