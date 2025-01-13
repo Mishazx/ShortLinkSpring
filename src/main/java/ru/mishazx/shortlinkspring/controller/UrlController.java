@@ -44,6 +44,8 @@ public class UrlController {
         
         List<Url> urls = urlService.findAllByUser(user);
         model.addAttribute("urls", urls);
+        model.addAttribute("defaultClickLimit", urlConfig.getDefaultClickLimit());
+        model.addAttribute("defaultExpirationHours", urlConfig.getDefaultExpirationHours());
 
         String fullUrl = request.getScheme() + "://" + request.getServerName() + request.getContextPath() + "/url";
         model.addAttribute("serverUrl", fullUrl);
@@ -124,16 +126,18 @@ public class UrlController {
             User user = userService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
             
+            // Используем значения по умолчанию, если параметры не указаны
             // Если указан 0, то устанавливаем null для бесконечного использования
-            Integer finalClickLimit = clickLimit == 0 ? null : clickLimit;
-            
+            Integer finalClickLimit = clickLimit == null ? urlConfig.getDefaultClickLimit() : 
+                                   clickLimit == 0 ? null : clickLimit;
+
+            Integer finalExpirationHours = expirationHours == null ? urlConfig.getDefaultExpirationHours() : 
+                                         expirationHours == 0 ? null : expirationHours;
+
             // Вычисляем время истечения
             LocalDateTime expiresAt = null;
-            if (expirationHours != null) {
-                if (expirationHours > 0) {
-                    expiresAt = LocalDateTime.now().plusHours(expirationHours);
-                }
-                // Если 0, то оставляем null для бесконечного срока
+            if (finalExpirationHours != null && finalExpirationHours > 0) {
+                expiresAt = LocalDateTime.now().plusHours(finalExpirationHours);
             }
 
             urlService.updateUrl(urlId, user, finalClickLimit, expiresAt);

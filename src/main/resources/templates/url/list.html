@@ -108,11 +108,19 @@
                         <input type="hidden" id="editUrlId" name="urlId">
                         <div class="mb-3">
                             <label for="editClickLimit" class="form-label">Лимит кликов:</label>
-                            <input type="number" id="editClickLimit" name="clickLimit" class="form-control" min="1">
+                            <input type="number" id="editClickLimit" name="clickLimit" class="form-control" min="0">
+                            <small class="form-text text-muted">
+                                По умолчанию: <span th:text="${defaultClickLimit}"></span> кликов. 
+                                Установите 0 для бесконечного количества кликов.
+                            </small>
                         </div>
                         <div class="mb-3">
                             <label for="editExpirationHours" class="form-label">Срок действия (часы):</label>
-                            <input type="number" id="editExpirationHours" name="expirationHours" class="form-control" min="1">
+                            <input type="number" id="editExpirationHours" name="expirationHours" class="form-control" min="0">
+                            <small class="form-text text-muted">
+                                По умолчанию: <span th:text="${defaultExpirationHours}"></span> часов. 
+                                Установите 0 для бесконечного срока действия.
+                            </small>
                         </div>
                     </form>
                 </div>
