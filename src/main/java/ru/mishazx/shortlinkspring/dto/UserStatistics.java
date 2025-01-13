@@ -7,5 +7,6 @@ import lombok.Builder;
 @Builder
 public class UserStatistics {
     private final long activeUrls;
+    private final long createdUrls;
     private final long totalClicks;
 } 

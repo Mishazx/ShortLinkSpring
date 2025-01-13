@@ -1,18 +1,27 @@
 package ru.mishazx.shortlinkspring.security;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
+import ru.mishazx.shortlinkspring.model.User;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
-@RequiredArgsConstructor
-public class CustomOAuth2User implements OAuth2User {
+@Getter
+public class CustomOAuth2User implements OAuth2User, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final OAuth2User oauth2User;
-    private final String username;
-    private final String registrationId;
+    private final User user;
+
+    public CustomOAuth2User(OAuth2User oauth2User, User user) {
+        this.oauth2User = oauth2User;
+        this.user = user;
+    }
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -21,28 +30,11 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return oauth2User.getAuthorities();
+        return Collections.singleton(new SimpleGrantedAuthority("OAUTH2_USER"));
     }
 
     @Override
     public String getName() {
-        return username;
-    }
-
-    public String getEmail() {
-        Object email = getAttributes().get("email");
-        return email != null ? email.toString() : null;
-    }
-
-    public String getId() {
-        return getAttributes().get("id").toString();
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getProvider() {
-        return registrationId;
+        return user.getUsername();
     }
 }

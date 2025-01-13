@@ -3,94 +3,166 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title>Личный кабинет</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>ShortLink - Главная</title>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container mt-5">
-        <div class="card p-4 shadow">
-            <h1 class="text-center">Добро пожаловать, <span th:text="${username}">User</span>!</h1>
-            <div class="row text-center mt-4">
-                <div class="col">
-                    <div class="h4" th:text="${urlCount}">0</div>
-                    <p>Активные ссылки</p>
-                </div>
-                <div class="col">
-                    <div class="h4" th:text="${totalClicks}">0</div>
-                    <p>Всего кликов</p>
+    <div class="container">
+        <!-- Приветствие и статистика -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <h1 class="display-4 mb-4" th:if="${username}">
+                            Привет, <span class="text-primary" th:text="${username}">User</span>!
+                        </h1>
+                        <h1 class="display-4 mb-4" th:unless="${username}">
+                            Добро пожаловать в ShortLink!
+                        </h1>
+                        <p class="lead text-muted">
+                            Создавайте короткие ссылки и отслеживайте их эффективность
+                        </p>
+                        <div class="mt-4" th:if="${username}">
+                            <a href="/url/create" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-plus-circle me-2"></i>Создать ссылку
+                            </a>
+                        </div>
+                        <div class="mt-4" th:unless="${username}">
+                            <a href="/auth/register" class="btn btn-primary btn-lg me-2">
+                                <i class="fas fa-user-plus me-2"></i>Регистрация
+                            </a>
+                            <a href="/auth/login" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Вход
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="text-center mt-4">
-                <a href="/urls/create" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Создать новую короткую ссылку
-                </a>
+        </div>
+
+        <!-- Статистика для авторизованных пользователей -->
+        <div class="row g-4" th:if="${username}">
+            <!-- Карточки со статистикой -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-primary mb-3">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 class="display-6" th:text="${urlCount}">0</h3>
+                        <p class="text-muted">Активных ссылок</p>
+                    </div>
+                </div>
             </div>
-            
-            <!-- Таблица со статистикой -->
-            <div class="mt-4" th:if="${not #lists.isEmpty(urlStats)}">
-                <h3>Ваши ссылки</h3>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Короткая ссылка</th>
-                                <th>Оригинальная ссылка</th>
-                                <th>Клики</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="stat : ${urlStats}">
-                                <td th:text="${stat.shortUrl}"></td>
-                                <td th:text="${stat.longUrl}"></td>
-                                <td th:text="${stat.clicks}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-success mb-3">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </div>
+                        <h3 class="display-6" th:text="${totalClicks}">0</h3>
+                        <p class="text-muted">Всего кликов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-warning mb-3">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="display-6" th:text="${urlCount > 0 ? #numbers.formatDecimal(totalClicks / urlCount, 1, 1) : '0'}">0</h3>
+                        <p class="text-muted">Среднее кликов</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- После таблицы со статистикой -->
-            <div class="mt-4">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Топ пользователей</h3>
+            <!-- Последние ссылки -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Последние ссылки</h5>
+                        <a href="/url/list" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>Все ссылки
+                        </a>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
+                        <div class="table-responsive" th:if="${not #lists.isEmpty(urlStats)}">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Место</th>
-                                        <th>Пользователь</th>
-                                        <th>Всего кликов</th>
-                                        <th>Количество ссылок</th>
+                                        <th>Короткая ссылка</th>
+                                        <th>Оригинальная ссылка</th>
+                                        <th>Клики</th>
+                                        <th>Создана</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="user : ${topUsers}" th:class="${user.username == username ? 'table-primary' : ''}">
+                                    <tr th:each="stat : ${urlStats}">
                                         <td>
-                                            <span th:if="${user.rank == 1}" class="text-warning">
-                                                <i class="fas fa-trophy"></i>
-                                            </span>
-                                            <span th:text="${user.rank}">1</span>
+                                            <a th:href="${stat.shortUrl}" class="text-decoration-none">
+                                                <span th:text="${stat.shortUrl}"></span>
+                                                <i class="fas fa-external-link-alt ms-1 small"></i>
+                                            </a>
                                         </td>
-                                        <td th:text="${user.username}">User</td>
-                                        <td th:text="${user.totalClicks}">0</td>
-                                        <td th:text="${user.urlCount}">0</td>
+                                        <td class="text-truncate" style="max-width: 300px;" th:text="${stat.longUrl}"></td>
+                                        <td th:text="${stat.clicks}"></td>
+                                        <td th:text="${#temporals.format(stat.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                        <div class="text-center py-4" th:if="${#lists.isEmpty(urlStats)}">
+                            <div class="text-muted">
+                                <i class="fas fa-link fa-3x mb-3"></i>
+                                <p>У вас пока нет созданных ссылок</p>
+                            </div>
+                            <a href="/url/create" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Создать первую ссылку
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация для неавторизованных пользователей -->
+        <div class="row g-4 mt-2" th:unless="${username}">
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 text-primary mb-3">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4>Быстро</h4>
+                        <p class="text-muted">Создавайте короткие ссылки в один клик</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 text-success mb-3">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4>Аналитика</h4>
+                        <p class="text-muted">Отслеживайте статистику переходов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 text-warning mb-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Безопасно</h4>
+                        <p class="text-muted">Защита от спама и вредоносных ссылок</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
-
+</html> 

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class UserRankingDTO {
     private String username;
     private Long totalClicks;
-    private Integer urlCount;
-    private Integer rank;
+    private Long createdUrls;
+    private int rank;
 } 

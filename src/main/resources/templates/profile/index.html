@@ -1,64 +1,95 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title>Profile - ShortLink</title>
+    <title>Профиль</title>
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="profile-section">
-            <h1>Profile</h1>
-            
-            <div class="profile-info">
-                <p><strong>Username:</strong> <span th:text="${user.username}">username</span></p>
-                <p><strong>Email:</strong> <span th:text="${user.email}">email</span></p>
-                <p><strong>Provider:</strong> <span th:text="${user.provider}">provider</span></p>
-                <p><strong>Total Clicks:</strong> <span th:text="${totalClicks}">0</span></p>
-            </div>
-
-            <div class="profile-edit" th:if="${user.provider != null and user.provider.name() == 'LOCAL'}">
-                <h2>Update Profile</h2>
-                <form th:action="@{/profile/update}" method="post">
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" th:value="${user.email}">
+<div layout:fragment="content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Приветствие -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center py-4">
+                        <div class="display-1 text-primary mb-3">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h2 class="mb-2">Добро пожаловать,</h2>
+                        <h1 class="display-5 text-primary mb-0" th:text="${user.username}">Username</h1>
                     </div>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
-            </div>
-
-            <div class="url-stats">
-                <h2>Your Links</h2>
-                <div th:if="${urlStats != null and not #lists.isEmpty(urlStats)}">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Original URL</th>
-                                <th>Short URL</th>
-                                <th>Clicks</th>
-                                <th>Created</th>
-                                <th>Expired</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="stat : ${urlStats}">
-                                <td th:text="${stat.longUrl}">Original URL</td>
-                                <td>
-                                    <a th:href="@{${stat.shortUrl}}" th:text="${stat.shortUrl}">Short URL</a>
-                                </td>
-                                <td th:text="${stat.clicks}">0</td>
-                                <td th:text="${#temporals.format(stat.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
-                                <td th:text="${#temporals.format(stat.expiredAt, 'dd-MM-yyyy HH:mm')}">Date</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
-                <p th:if="${urlStats == null or #lists.isEmpty(urlStats)}" class="text-muted">
-                    You haven't created any links yet.
-                </p>
+
+                <!-- Основная информация -->
+                <div class="card shadow-sm">
+                    <div class="card-header py-3">
+                        <h3 class="mb-0">Информация профиля</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Детальная информация -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Основная информация
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">Email:</label>
+                                            <div class="h5" th:text="${user.email ?: 'Не указан'}">email@example.com</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">Способ входа:</label>
+                                            <div class="h5">
+                                                <span class="badge bg-primary" th:if="${user.provider == 'GITHUB'}">
+                                                    <i class="fab fa-github me-1"></i>GitHub
+                                                </span>
+                                                <span class="badge bg-danger" th:if="${user.provider == 'YANDEX'}">
+                                                    <i class="fas fa-y me-1"></i>Яндекс
+                                                </span>
+                                                <span class="badge bg-primary" th:if="${user.provider == 'VK'}">
+                                                    <i class="fab fa-vk me-1"></i>ВКонтакте
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-success mb-3">
+                                            <i class="fas fa-chart-bar me-2"></i>Статистика
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">Всего кликов:</label>
+                                            <div class="h5" th:text="${totalClicks}">0</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">Создано ссылок:</label>
+                                            <div class="h5" th:text="${urlCount}">0</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">Среднее кликов:</label>
+                                            <div class="h5" th:text="${urlCount > 0 ? #numbers.formatDecimal(totalClicks / urlCount, 1, 1) : '0'}">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка создания -->
+                        <div class="text-center">
+                            <a href="/url/create" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>Создать новую ссылку
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 </body>
 </html> 

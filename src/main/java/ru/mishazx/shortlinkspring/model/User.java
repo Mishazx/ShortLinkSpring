@@ -4,24 +4,26 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    @Column(nullable = false, unique = true)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(unique = true)
     private String username;
 
-    @Column(nullable = true)
     private String email;
 
     private String password;
@@ -31,18 +33,27 @@ public class User {
 
     private String providerId;
 
-    @Column(name = "total_clicks")
     @Builder.Default
     private Long totalClicks = 0L;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Url> urls = new ArrayList<>();
+    private Long createdUrls = 0L;
+
+    @Builder.Default
+    private Long activeUrls = 0L;
 
     public void incrementTotalClicks() {
-        if (this.totalClicks == null) {
-            this.totalClicks = 0L;
-        }
         this.totalClicks++;
+    }
+
+    public void incrementCreatedUrls() {
+        this.createdUrls++;
+        this.activeUrls++;
+    }
+
+    public void decrementCreatedUrls() {
+        if (this.activeUrls > 0) {
+            this.activeUrls--;
+        }
     }
 } 

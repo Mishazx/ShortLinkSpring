@@ -5,63 +5,63 @@
 <head>
     <title>Рейтинг пользователей</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container mt-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h3 class="mb-0">Рейтинг пользователей</h3>
-                <div>
-                    <select class="form-select form-select-sm" id="limitSelect" onchange="updateLimit(this.value)">
-                        <option value="10" th:selected="${currentLimit == 10}">Top 10</option>
-                        <option value="20" th:selected="${currentLimit == 20}">Top 20</option>
-                        <option value="50" th:selected="${currentLimit == 50}">Top 50</option>
-                        <option value="100" th:selected="${currentLimit == 100}">Top 100</option>
-                    </select>
-                </div>
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Рейтинг пользователей</h2>
             </div>
             <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col">
+                        <form th:action="@{/ranking}" method="get" class="form-inline">
+                            <div class="input-group">
+                                <select name="limit" class="form-select" onchange="this.form.submit()">
+                                    <option value="10" th:selected="${limit == 10}">Top 10</option>
+                                    <option value="25" th:selected="${limit == 25}">Top 25</option>
+                                    <option value="50" th:selected="${limit == 50}">Top 50</option>
+                                    <option value="100" th:selected="${limit == 100}">Top 100</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>Место</th>
-                                <th>Пользователь</th>
-                                <th>Всего кликов</th>
-                                <th>Количество ссылок</th>
-                                <th>Среднее кликов на ссылку</th>
-                            </tr>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Пользователь</th>
+                            <th scope="col">Всего кликов</th>
+                            <th scope="col">Создано ссылок</th>
+                            <th scope="col">Среднее кликов на ссылку</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="user : ${rankings}">
-                                <td class="align-middle">
-                                    <span th:if="${user.rank == 1}" class="text-warning">
-                                        <i class="fas fa-trophy"></i>
-                                    </span>
-                                    <span th:if="${user.rank == 2}" class="text-secondary">
-                                        <i class="fas fa-medal"></i>
-                                    </span>
-                                    <span th:if="${user.rank == 3}" class="text-bronze">
-                                        <i class="fas fa-medal"></i>
-                                    </span>
-                                    <span th:text="${user.rank}">1</span>
-                                </td>
-                                <td class="align-middle" th:text="${user.username}">User</td>
-                                <td class="align-middle">
-                                    <span th:text="${user.totalClicks}">0</span>
-                                    <small class="text-muted">кликов</small>
-                                </td>
-                                <td class="align-middle">
-                                    <span th:text="${user.urlCount}">0</span>
-                                    <small class="text-muted">ссылок</small>
-                                </td>
-                                <td class="align-middle">
-                                    <span th:text="${user.urlCount > 0 ? #numbers.formatDecimal(user.totalClicks / user.urlCount, 1, 1) : 0}">0</span>
-                                    <small class="text-muted">кликов/ссылку</small>
-                                </td>
-                            </tr>
+                        <tr th:each="user : ${users}">
+                            <td>
+                                <span th:text="${user.rank}" class="badge bg-primary"></span>
+                            </td>
+                            <td>
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span th:text="${user.username}"></span>
+                            </td>
+                            <td>
+                                <i class="bi bi-hand-index me-2"></i>
+                                <span th:text="${user.totalClicks}"></span>
+                            </td>
+                            <td>
+                                <i class="bi bi-link-45deg me-2"></i>
+                                <span th:text="${user.createdUrls}"></span>
+                            </td>
+                            <td>
+                                <i class="bi bi-graph-up me-2"></i>
+                                <span th:text="${user.createdUrls > 0 ? #numbers.formatDecimal(user.totalClicks / user.createdUrls, 1, 2) : '0.00'}"></span>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -69,18 +69,5 @@
         </div>
     </div>
 </div>
-
-<script>
-function updateLimit(limit) {
-    window.location.href = '/ranking?limit=' + limit;
-}
-</script>
-
-<style>
-.text-bronze {
-    color: #cd7f32;
-}
-</style>
-
 </body>
 </html> 

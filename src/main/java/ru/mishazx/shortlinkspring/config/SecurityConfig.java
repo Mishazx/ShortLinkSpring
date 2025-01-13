@@ -59,7 +59,7 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/profile", true)
                 .permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -75,7 +75,7 @@ public class SecurityConfig {
                         userDetails.getAuthorities()
                     );
                     SecurityContextHolder.getContext().setAuthentication(newAuth);
-                    response.sendRedirect("/");
+                    response.sendRedirect("/profile");
                 })
             )
             .logout(logout -> logout
