@@ -44,6 +44,8 @@ public class UrlService {
                 .expiresAt(expiresAt)
                 .build();
 
+        user.incrementCreatedUrls();
+        userService.save(user);
         return urlRepository.save(url);
     }
 
@@ -95,6 +97,7 @@ public class UrlService {
         return UserStatistics.builder()
                 .activeUrls(activeUrls)
                 .totalClicks(user.getTotalClicks())
+                .createdUrls(user.getCreatedUrls())
                 .build();
     }
 

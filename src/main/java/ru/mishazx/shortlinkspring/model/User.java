@@ -51,7 +51,7 @@ public class User implements Serializable {
         this.activeUrls++;
     }
 
-    public void decrementCreatedUrls() {
+    public void decrementActiveUrls() {
         if (this.activeUrls > 0) {
             this.activeUrls--;
         }

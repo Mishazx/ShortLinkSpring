@@ -36,6 +36,7 @@ public class ProfileController {
             model.addAttribute("user", user);
             model.addAttribute("urlStats", urlStats);
             model.addAttribute("totalClicks", stats.getTotalClicks());
+            model.addAttribute("urlCount", stats.getCreatedUrls());
             
             return "profile/index";
         } catch (Exception e) {
