@@ -56,4 +56,8 @@ public class User implements Serializable {
             this.activeUrls--;
         }
     }
+
+    public String toString() {
+        return "Username: " + username + ", Email: " + email + ", Provider: " + provider + ", Total Clicks: " + totalClicks;
+    }
 } 

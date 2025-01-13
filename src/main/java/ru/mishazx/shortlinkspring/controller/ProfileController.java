@@ -27,7 +27,9 @@ public class ProfileController {
         try {
             User user = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found: " + userDetails.getUsername()));
-            
+
+            System.out.println(user.toString());
+
             UserStatistics stats = urlService.getUserStatistics(user.getUsername());
             List<UrlStats> urlStats = urlService.getUserUrlStats(user.getUsername());
             

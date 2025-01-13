@@ -36,20 +36,18 @@
                                             <i class="fas fa-info-circle me-2"></i>Основная информация
                                         </h5>
                                         <div class="mb-3">
+                                            <label class="text-muted mb-1">UUID:</label>
+                                            <div class="h5" th:text="${user.id ?: 'Не указан'}">Иван</div>
+                                        </div>
+                                        <div class="mb-3">
                                             <label class="text-muted mb-1">Email:</label>
                                             <div class="h5" th:text="${user.email ?: 'Не указан'}">email@example.com</div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="text-muted mb-1">Способ входа:</label>
                                             <div class="h5">
-                                                <span class="badge bg-primary" th:if="${user.provider == 'GITHUB'}">
-                                                    <i class="fab fa-github me-1"></i>GitHub
-                                                </span>
-                                                <span class="badge bg-danger" th:if="${user.provider == 'YANDEX'}">
-                                                    <i class="fas fa-y me-1"></i>Яндекс
-                                                </span>
-                                                <span class="badge bg-primary" th:if="${user.provider == 'VK'}">
-                                                    <i class="fab fa-vk me-1"></i>ВКонтакте
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-user me-2" th:text="${user.provider}"></i>
                                                 </span>
                                             </div>
                                         </div>
