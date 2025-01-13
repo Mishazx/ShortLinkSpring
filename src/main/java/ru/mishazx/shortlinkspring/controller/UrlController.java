@@ -19,6 +19,7 @@ import ru.mishazx.shortlinkspring.model.Url;
 import ru.mishazx.shortlinkspring.model.User;
 import ru.mishazx.shortlinkspring.service.UrlService;
 import ru.mishazx.shortlinkspring.service.UserService;
+import ru.mishazx.shortlinkspring.config.UrlConfig;
 
 @Controller
 @RequestMapping("/url")
@@ -27,9 +28,12 @@ public class UrlController {
     private static final Logger logger = LoggerFactory.getLogger(UrlController.class);
     private final UrlService urlService;
     private final UserService userService;
+    private final UrlConfig urlConfig;
 
     @GetMapping("/create")
-    public String showCreateForm() {
+    public String showCreateForm(Model model) {
+        model.addAttribute("defaultClickLimit", urlConfig.getDefaultClickLimit());
+        model.addAttribute("defaultExpirationHours", urlConfig.getDefaultExpirationHours());
         return "url/create";
     }
 
@@ -57,13 +61,18 @@ public class UrlController {
             User user = userService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
             
-            // Вычисляем время истечения, если указано
+            Integer finalClickLimit = clickLimit == null ? urlConfig.getDefaultClickLimit() : 
+                                   clickLimit == 0 ? null : clickLimit;
+
+            Integer finalExpirationHours = expirationHours == null ? urlConfig.getDefaultExpirationHours() : 
+                                         expirationHours == 0 ? null : expirationHours;
+
             LocalDateTime expiresAt = null;
-            if (expirationHours != null && expirationHours > 0) {
-                expiresAt = LocalDateTime.now().plusHours(expirationHours);
+            if (finalExpirationHours != null && finalExpirationHours > 0) {
+                expiresAt = LocalDateTime.now().plusHours(finalExpirationHours);
             }
 
-            Url url = urlService.createShortUrl(originalUrl, user, clickLimit, expiresAt);
+            Url url = urlService.createShortUrl(originalUrl, user, finalClickLimit, expiresAt);
             model.addAttribute("shortUrl", url.getShortUrl());
             model.addAttribute("fullUrl", originalUrl);
             return "redirect:/url/list";
@@ -115,13 +124,19 @@ public class UrlController {
             User user = userService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
             
-            // Вычисляем время истечения, если указано
+            // Если указан 0, то устанавливаем null для бесконечного использования
+            Integer finalClickLimit = clickLimit == 0 ? null : clickLimit;
+            
+            // Вычисляем время истечения
             LocalDateTime expiresAt = null;
-            if (expirationHours != null && expirationHours > 0) {
-                expiresAt = LocalDateTime.now().plusHours(expirationHours);
+            if (expirationHours != null) {
+                if (expirationHours > 0) {
+                    expiresAt = LocalDateTime.now().plusHours(expirationHours);
+                }
+                // Если 0, то оставляем null для бесконечного срока
             }
 
-            urlService.updateUrl(urlId, user, clickLimit, expiresAt);
+            urlService.updateUrl(urlId, user, finalClickLimit, expiresAt);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error updating URL: ", e);

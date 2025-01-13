@@ -95,7 +95,7 @@
                                     <td class="text-center align-middle">
                                         <span class="badge bg-warning">
                                             <i class="fas fa-chart-line me-1"></i>
-                                            <span th:text="${user.createdUrls > 0 ? #numbers.formatDecimal(user.totalClicks / user.createdUrls, 1, 2) : '0.00'}"></span>
+                                            <span th:text="${user.createdUrls > 0 ? #numbers.formatDecimal((user.totalClicks * 1.0) / user.createdUrls, 1, 2) : '0.00'}"></span>
                                         </span>
                                     </td>
                                 </tr>
