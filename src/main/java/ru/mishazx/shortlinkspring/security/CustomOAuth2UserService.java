@@ -47,15 +47,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         switch (registrationId.toLowerCase()) {
             case "github":
                 return String.valueOf(attributes.get("id"));
-            case "vk":
-                if (attributes.containsKey("response")) {
-                    var response = (java.util.ArrayList<?>) attributes.get("response");
-                    if (!response.isEmpty()) {
-                        var userInfo = (Map<String, Object>) response.get(0);
-                        return String.valueOf(userInfo.get("id"));
-                    }
-                }
-                return String.valueOf(attributes.get("id"));
             case "yandex":
                 return String.valueOf(attributes.get("id"));
             default:
@@ -67,15 +58,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         switch (registrationId.toLowerCase()) {
             case "github":
                 return (String) attributes.get("email");
-            case "vk":
-                if (attributes.containsKey("response")) {
-                    var response = (java.util.ArrayList<?>) attributes.get("response");
-                    if (!response.isEmpty()) {
-                        var userInfo = (Map<String, Object>) response.get(0);
-                        return (String) userInfo.get("email");
-                    }
-                }
-                return null;
             case "yandex":
                 return (String) attributes.get("default_email");
             default:
@@ -87,17 +69,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         switch (registrationId.toLowerCase()) {
             case "github":
                 return (String) attributes.get("login");
-            case "vk":
-                if (attributes.containsKey("response")) {
-                    var response = (java.util.ArrayList<?>) attributes.get("response");
-                    if (!response.isEmpty()) {
-                        var userInfo = (Map<String, Object>) response.get(0);
-                        String firstName = (String) userInfo.get("first_name");
-                        String lastName = (String) userInfo.get("last_name");
-                        return firstName + "_" + lastName;
-                    }
-                }
-                return "vk_user_" + attributes.get("id");
             case "yandex":
                 return (String) attributes.get("login");
             default:

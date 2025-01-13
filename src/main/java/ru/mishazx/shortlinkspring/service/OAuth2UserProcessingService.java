@@ -12,7 +12,6 @@ import ru.mishazx.shortlinkspring.model.enums.AuthProvider;
 import ru.mishazx.shortlinkspring.security.CustomOAuth2User;
 
 import java.util.Map;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -21,7 +20,6 @@ public class OAuth2UserProcessingService {
 
     private final UserService userService;
 
-    @SuppressWarnings("unchecked")
     public CustomOAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oauth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         Map<String, Object> attributes = oauth2User.getAttributes();
@@ -29,9 +27,7 @@ public class OAuth2UserProcessingService {
         log.debug("Processing OAuth2 user for provider: {}", registrationId);
         log.debug("Attributes received: {}", attributes);
 
-        if ("vk".equalsIgnoreCase(registrationId)) {
-            return processVkUser(oauth2User, attributes);
-        } else if ("github".equalsIgnoreCase(registrationId)) {
+        if ("github".equalsIgnoreCase(registrationId)) {
             return processGithubUser(oauth2User, attributes);
         } else if ("yandex".equalsIgnoreCase(registrationId)) {
             return processYandexUser(oauth2User, attributes);
@@ -40,32 +36,6 @@ public class OAuth2UserProcessingService {
         throw new OAuth2AuthenticationException(
             new OAuth2Error("unknown_provider", "Unknown OAuth2 provider: " + registrationId, null)
         );
-    }
-
-    private CustomOAuth2User processVkUser(OAuth2User oauth2User, Map<String, Object> attributes) {
-        List<Map<String, Object>> response = (List<Map<String, Object>>) attributes.get("response");
-        if (response == null || response.isEmpty()) {
-            log.error("Invalid VK response: {}", attributes);
-            throw new OAuth2AuthenticationException(
-                new OAuth2Error("invalid_vk_response", "VK response does not contain user data", null)
-            );
-        }
-        
-        Map<String, Object> userInfo = response.get(0);
-        String providerId = String.valueOf(userInfo.get("id"));
-        if (providerId == null) {
-            log.error("VK user ID is missing from response: {}", userInfo);
-            throw new OAuth2AuthenticationException(
-                new OAuth2Error("invalid_vk_user", "VK user ID is missing", null)
-            );
-        }
-
-        String email = (String) userInfo.get("email");
-        String firstName = (String) userInfo.getOrDefault("first_name", "");
-        String lastName = (String) userInfo.getOrDefault("last_name", "");
-        String username = createUsername(firstName, lastName, providerId);
-
-        return createOAuth2User(oauth2User, username, email, AuthProvider.VK, providerId);
     }
 
     private CustomOAuth2User processGithubUser(OAuth2User oauth2User, Map<String, Object> attributes) {
@@ -96,11 +66,6 @@ public class OAuth2UserProcessingService {
         }
 
         return createOAuth2User(oauth2User, username, email, AuthProvider.YANDEX, providerId);
-    }
-
-    private String createUsername(String firstName, String lastName, String providerId) {
-        String username = (firstName + "_" + lastName).trim();
-        return username.isEmpty() || username.equals("_") ? "vk_user_" + providerId : username;
     }
 
     private CustomOAuth2User createOAuth2User(OAuth2User oauth2User, String username, String email, 
