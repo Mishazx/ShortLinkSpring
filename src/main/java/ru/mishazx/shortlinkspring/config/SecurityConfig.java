@@ -22,12 +22,8 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import ru.mishazx.shortlinkspring.service.AuthenticationService;
-import ru.mishazx.shortlinkspring.service.OAuth2UserProcessingService;
-//import ru.mishazx.shortlinkspring.security.VkOAuth2AccessTokenResponseConverter;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import ru.mishazx.shortlinkspring.security.CustomOAuth2UserService;
 
 @Configuration

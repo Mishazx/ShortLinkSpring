@@ -1,26 +1,24 @@
 package ru.mishazx.shortlinkspring.controller;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.mishazx.shortlinkspring.model.Url;
-import ru.mishazx.shortlinkspring.model.User;
-import ru.mishazx.shortlinkspring.security.SecurityUtils;
-import ru.mishazx.shortlinkspring.service.UrlService;
-import ru.mishazx.shortlinkspring.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.http.ResponseEntity;
-//import javax.servlet.http.HttpServletRequest;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import ru.mishazx.shortlinkspring.model.Url;
+import ru.mishazx.shortlinkspring.model.User;
+import ru.mishazx.shortlinkspring.service.UrlService;
+import ru.mishazx.shortlinkspring.service.UserService;
 
 @Controller
 @RequestMapping("/url")
