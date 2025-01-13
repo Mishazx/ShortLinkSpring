@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+//    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,22 +39,12 @@ public class User implements Serializable {
     @Builder.Default
     private Long createdUrls = 0L;
 
-    @Builder.Default
-    private Long activeUrls = 0L;
-
     public void incrementTotalClicks() {
         this.totalClicks++;
     }
 
     public void incrementCreatedUrls() {
         this.createdUrls++;
-        this.activeUrls++;
-    }
-
-    public void decrementActiveUrls() {
-        if (this.activeUrls > 0) {
-            this.activeUrls--;
-        }
     }
 
     public String toString() {

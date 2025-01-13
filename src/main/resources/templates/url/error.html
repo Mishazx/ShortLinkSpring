@@ -20,6 +20,7 @@
                         <div class="mt-4">
                             <p>Возможные причины:</p>
                             <ul>
+                                <li th:if="${status != null && status == 403}">Ошибка безопасности (CSRF токен)</li>
                                 <li>URL больше не существует</li>
                                 <li>Срок действия ссылки истек</li>
                                 <li>Достигнут лимит переходов</li>
@@ -27,8 +28,9 @@
                             </ul>
                         </div>
                         <div class="mt-4">
-                            <a href="/url/create" class="btn btn-primary">Создать новую ссылку</a>
-                            <a href="/url/list" class="btn btn-secondary ml-2">Мои ссылки</a>
+                            <a href="/url/list" class="btn btn-primary">Вернуться к списку</a>
+                            <a href="/url/create" class="btn btn-secondary ml-2">Создать новую ссылку</a>
+                            <button onclick="window.location.reload()" class="btn btn-outline-primary ml-2">Обновить страницу</button>
                         </div>
                     </div>
                 </div>

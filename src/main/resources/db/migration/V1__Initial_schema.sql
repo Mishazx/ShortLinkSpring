@@ -10,8 +10,7 @@ CREATE TABLE users (
     provider VARCHAR(50),
     provider_id VARCHAR(255),
     total_clicks BIGINT DEFAULT 0,
-    created_urls BIGINT DEFAULT 0,
-    active_urls BIGINT DEFAULT 0
+    created_urls BIGINT DEFAULT 0
 );
 
 -- URLs table
