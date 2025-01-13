@@ -5,9 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShortLink</title>
+    <title layout:title-pattern="$CONTENT_TITLE - ShortLink">ShortLink</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body class="bg-light">
 
@@ -107,6 +110,258 @@
 
     themeSwitch.addEventListener('change', (e) => setTheme(e.target.checked));
 </script>
+
+<script th:inline="javascript">
+    // Функция для форматирования даты
+    function formatDateTime(isoDateString) {
+        try {
+            const date = new Date(isoDateString);
+            if (isNaN(date.getTime())) {
+                throw new Error('Invalid date');
+            }
+            return new Intl.DateTimeFormat('ru-RU', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return 'Дата недоступна';
+        }
+    }
+
+    // Функция для управления уведомлениями в localStorage
+    const notificationStorage = {
+        // Ключ для хранения состояния уведомлений
+        storageKey: 'url_notifications',
+        
+        // Получить сохраненные уведомления
+        getNotifications() {
+            const stored = localStorage.getItem(this.storageKey);
+            return stored ? JSON.parse(stored) : {};
+        },
+        
+        // Сохранить состояние уведомления
+        saveNotification(shortUrl, expiresAt) {
+            const notifications = this.getNotifications();
+            notifications[shortUrl] = {
+                lastShown: new Date().toISOString(),
+                expiresAt: expiresAt
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(notifications));
+        },
+        
+        // Проверить, нужно ли показывать уведомление
+        shouldShowNotification(shortUrl, expiresAt) {
+            const notifications = this.getNotifications();
+            const notification = notifications[shortUrl];
+            
+            if (!notification) {
+                return true;
+            }
+            
+            // Проверяем, прошло ли 5 минут с последнего показа
+            const lastShown = new Date(notification.lastShown);
+            const now = new Date();
+            const timeDiff = (now - lastShown) / 1000 / 60; // разница в минутах
+            
+            // Если прошло больше 5 минут, показываем снова
+            return timeDiff >= 5;
+        },
+        
+        // Очистить устаревшие уведомления
+        cleanupExpired() {
+            const notifications = this.getNotifications();
+            const now = new Date();
+            let hasChanges = false;
+            
+            Object.entries(notifications).forEach(([shortUrl, data]) => {
+                const expiresAt = new Date(data.expiresAt);
+                if (expiresAt < now) {
+                    delete notifications[shortUrl];
+                    hasChanges = true;
+                }
+            });
+            
+            if (hasChanges) {
+                localStorage.setItem(this.storageKey, JSON.stringify(notifications));
+            }
+        }
+    };
+
+    // Функция для создания и показа уведомления
+    function showNotification(shortUrl, hoursLeft, expiresAt) {
+        console.log('Creating notification with raw data:', { shortUrl, hoursLeft, expiresAt });
+        
+        // Проверяем и очищаем входные данные
+        shortUrl = String(shortUrl || '').trim();
+        hoursLeft = parseInt(hoursLeft);
+        
+        if (!shortUrl || isNaN(hoursLeft) || !expiresAt) {
+            console.error('Invalid notification data after cleaning:', { shortUrl, hoursLeft, expiresAt });
+            return;
+        }
+
+        // Проверяем, нужно ли показывать уведомление
+        if (!notificationStorage.shouldShowNotification(shortUrl, expiresAt)) {
+            console.log('Skipping notification for', shortUrl, '- shown recently');
+            return;
+        }
+
+        const formattedDate = formatDateTime(expiresAt);
+        console.log('Formatted date:', formattedDate);
+
+        const toastHtml = `
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong class="me-auto">Срок действия истекает</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <p class="mb-1">Ссылка скоро истечет:</p>
+                    <p class="mb-1"><strong>${shortUrl}</strong></p>
+                    <p class="mb-0 text-muted">
+                        Осталось: ${hoursLeft} ч.<br>
+                        Истекает: ${formattedDate}
+                    </p>
+                </div>
+            </div>
+        `;
+
+        const container = document.getElementById('notificationContainer');
+        if (!container) {
+            console.error('Notification container not found');
+            return;
+        }
+
+        try {
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = container.lastElementChild;
+            
+            if (!toastElement) {
+                console.error('Failed to create toast element');
+                return;
+            }
+
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: false
+            });
+            
+            toast.show();
+            // Сохраняем информацию о показе уведомления
+            notificationStorage.saveNotification(shortUrl, expiresAt);
+            console.log('Notification shown successfully');
+        } catch (error) {
+            console.error('Error showing notification:', error);
+        }
+    }
+
+    // Функция для проверки истекающих ссылок
+    function checkExpiringUrls() {
+        console.log('Starting URL expiration check...');
+        
+        // Сначала очищаем устаревшие уведомления
+        notificationStorage.cleanupExpired();
+        
+        // Проверяем все сохраненные уведомления
+        const notifications = notificationStorage.getNotifications();
+        const now = new Date();
+        
+        // Проверяем каждое уведомление в localStorage
+        Object.entries(notifications).forEach(([shortUrl, data]) => {
+            const lastShown = new Date(data.lastShown);
+            const expiresAt = new Date(data.expiresAt);
+            const timeSinceLastShown = (now - lastShown) / 1000 / 60; // в минутах
+            
+            // Если прошло больше 5 минут с последнего показа и ссылка еще не истекла
+            if (timeSinceLastShown >= 5 && expiresAt > now) {
+                const hoursLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60));
+                showNotification(shortUrl, hoursLeft, data.expiresAt);
+            }
+        });
+        
+        // Делаем запрос к серверу для проверки новых истекающих ссылок
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        fetch('/api/url-expiration/check', {
+            method: 'GET',
+            headers: {
+                [csrfHeader]: csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Received data:', data);
+            if (data.hasExpiring && data.urls) {
+                console.log('Found expiring URLs:', data.urls);
+                
+                // Получаем правильный массив URL
+                let urlsToProcess = data.urls;
+                if (data.urls[0] === "java.util.ArrayList") {
+                    urlsToProcess = data.urls[1];
+                }
+                
+                console.log('Processing URLs:', urlsToProcess);
+                
+                urlsToProcess.forEach((urlData, index) => {
+                    console.log(`Processing URL ${index}:`, urlData);
+                    
+                    // Извлекаем данные из вложенной структуры
+                    const shortUrl = urlData[0]?.shortUrl || urlData.shortUrl;
+                    const hoursLeft = urlData[0]?.hoursLeft || urlData.hoursLeft;
+                    const expiresAt = urlData[0]?.expiresAt || urlData.expiresAt;
+                    
+                    console.log('Extracted data:', { shortUrl, hoursLeft, expiresAt });
+                    
+                    // Проверяем, нужно ли показывать уведомление
+                    if (shortUrl && hoursLeft !== undefined && expiresAt) {
+                        // Проверяем, не показывали ли мы недавно уведомление для этой ссылки
+                        if (notificationStorage.shouldShowNotification(shortUrl, expiresAt)) {
+                            showNotification(shortUrl, hoursLeft, expiresAt);
+                        } else {
+                            console.log('Skipping notification for', shortUrl, '- shown recently');
+                        }
+                    } else {
+                        console.error('Invalid URL data structure:', urlData);
+                    }
+                });
+            } else {
+                console.log('No new expiring URLs found');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking expiring URLs:', error);
+        });
+    }
+
+    // Проверяем при загрузке страницы и каждые 5 минут
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, checking authentication...');
+        // Проверяем наличие элементов, которые видны только аутентифицированным пользователям
+        const isAuthenticated = document.querySelector('form[action="/auth/logout"]') !== null;
+        console.log('Is authenticated:', isAuthenticated);
+        
+        if (isAuthenticated) {
+            console.log('Starting URL expiration checks...');
+            // Первая проверка через 2 секунды после загрузки страницы
+            setTimeout(checkExpiringUrls, 2000);
+            // Последующие проверки каждые 5 минут
+            setInterval(checkExpiringUrls, 5 * 60 * 1000);
+        }
+    });
+</script>
+
+<!-- Контейнер для уведомлений -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="notificationContainer">
+</div>
 
 </body>
 </html>
