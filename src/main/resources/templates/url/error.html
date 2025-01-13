@@ -3,13 +3,36 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title>Error</title>
+    <title>Ошибка URL</title>
 </head>
 <body>
-    <div layout:fragment="content">
-        <div class="alert alert-danger" role="alert">
-            <h4 class="alert-heading">Error!</h4>
-            <p th:text="${errorMessage}">An error occurred while processing your request.</p>
+    <div layout:fragment="content" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">Ошибка!</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger" role="alert">
+                            <p class="mb-0" th:text="${errorMessage}">Произошла ошибка при обработке URL.</p>
+                        </div>
+                        <div class="mt-4">
+                            <p>Возможные причины:</p>
+                            <ul>
+                                <li>URL больше не существует</li>
+                                <li>Срок действия ссылки истек</li>
+                                <li>Достигнут лимит переходов</li>
+                                <li>Неверный формат ссылки</li>
+                            </ul>
+                        </div>
+                        <div class="mt-4">
+                            <a href="/url/create" class="btn btn-primary">Создать новую ссылку</a>
+                            <a href="/url/list" class="btn btn-secondary ml-2">Мои ссылки</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

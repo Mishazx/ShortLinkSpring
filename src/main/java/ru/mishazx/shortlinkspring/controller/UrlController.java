@@ -75,13 +75,24 @@ public class UrlController {
     }
 
     @GetMapping("/{shortUrl}")
-    public String redirectToOriginalUrl(@PathVariable String shortUrl) {
+    public String redirectToOriginalUrl(@PathVariable String shortUrl, Model model) {
         try {
             String originalUrl = urlService.getOriginalUrl(shortUrl);
             return "redirect:" + originalUrl;
         } catch (Exception e) {
             logger.error("Error redirecting short URL: {}", shortUrl, e);
-            return "redirect:/url/create?error=URL+not+found";
+            String errorMessage;
+            if (e.getMessage().contains("expired")) {
+                errorMessage = "Срок действия ссылки истек";
+            } else if (e.getMessage().contains("limit")) {
+                errorMessage = "Достигнут лимит переходов по ссылке";
+            } else if (e.getMessage().contains("not found")) {
+                errorMessage = "Ссылка не найдена или была удалена";
+            } else {
+                errorMessage = "Произошла ошибка при обработке ссылки";
+            }
+            model.addAttribute("errorMessage", errorMessage);
+            return "url/error";
         }
     }
 
