@@ -70,7 +70,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="text-muted mb-1">Среднее кликов:</label>
-                                            <div class="h5" th:text="${urlCount > 0 ? #numbers.formatDecimal(totalClicks / urlCount, 1, 1) : '0'}">0</div>
+                                            <div class="h5" th:text="${urlCount > 0 ? #numbers.formatDecimal(totalClicks * 1.0 / urlCount, 1, 2) : '0.00'}">0</div>
                                         </div>
                                     </div>
                                 </div>

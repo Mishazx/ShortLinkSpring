@@ -9,36 +9,36 @@
 <body class="bg-light">
 <div layout:fragment="content">
     <div class="container">
-        <div class="row justify-content-center" style="margin-top: 100px;">
+        <div class="row justify-content-center mt-4">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h4>Войти</h4>
+                <div class="card shadow-sm">
+                    <div class="card-header text-center py-3">
+                        <h4 class="mb-0">Войти</h4>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <div id="error-message" class="alert alert-danger d-none"></div>
                         <form th:action="@{/auth/login}" method="post">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Имя пользователя</label>
                                 <input type="text" class="form-control" id="username" name="username" required>
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label for="password" class="form-label">Пароль</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Войти</button>
+                            <button type="submit" class="btn btn-primary w-100 mb-3">Войти</button>
                         </form>
-                        <div class="text-center mt-3">
+                        <div class="text-center mb-4">
                             <span>Нет аккаунта? </span>
                             <a href="/auth/register">Зарегистрироваться</a>
                         </div>
-                        <div class="social-login text-center mt-3">
-                            <a href="/oauth2/authorization/github" class="btn btn-social btn-secondary">
-                                <img src="/images/github-logo.svg" alt="GitHub Logo" class="social-icon" style="width: 20px;">
+                        <div class="social-login">
+                            <a href="/oauth2/authorization/github" class="btn btn-social btn-secondary w-100 mb-2">
+                                <img src="/images/github-logo.svg" alt="GitHub Logo" class="social-icon">
                                 Войти через GitHub
                             </a>
-                            <a href="/oauth2/authorization/yandex" class="btn btn-social btn-secondary">
-                                <img src="/images/yandex-logo.svg" alt="Yandex Logo" class="social-icon" style="width: 20px;">
+                            <a href="/oauth2/authorization/yandex" class="btn btn-social btn-secondary w-100">
+                                <img src="/images/yandex-logo.svg" alt="Yandex Logo" class="social-icon">
                                 Войти через Яндекс
                             </a>
                         </div>
@@ -49,23 +49,7 @@
     </div>
 </div>
 
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const errorDiv = document.getElementById('error-message');
-
-    if (error) {
-        const errorMessages = {
-            'Email already exists': 'Этот email уже зарегистрирован',
-            'Invalid credentials': 'Неверные учетные данные',
-            'User not found': 'Пользователь не найден'
-        };
-
-        const decodedError = decodeURIComponent(error);
-        errorDiv.textContent = errorMessages[decodedError] || decodedError;
-        errorDiv.classList.remove('d-none');
-    }
-</script>
+<script src="/js/auth-error-handler.js"></script>
 
 <style>
     .btn-social {
@@ -73,8 +57,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin: 5px;
-        padding: 8px 16px;
+        padding: 12px 16px;
         border-radius: 4px;
         transition: all 0.2s ease;
         font-weight: 500;
@@ -85,7 +68,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .btn-social img {
+    .social-icon {
         width: 20px;
         height: 20px;
         object-fit: contain;
@@ -94,8 +77,7 @@
     .social-login {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        margin-top: 20px;
+        gap: 12px;
     }
 </style>
 </body>

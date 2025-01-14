@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile
     image: mishazx/shortlinkspring:latest
     ports:
-      - "8080:8080"
+      - "8999:8080"
     depends_on:
       db:
         condition: service_healthy
