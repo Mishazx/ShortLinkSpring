@@ -1,13 +1,21 @@
 package ru.mishazx.shortlinkspring.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@ConfigurationProperties(prefix = "url")
-@Data
+@Component
 public class UrlConfig {
-    private Integer defaultClickLimit = 100;
-    private Integer defaultExpirationHours = 24;
+    @Value("${url.default-click-limit:100}")
+    private Integer defaultClickLimit;
+
+    @Value("${url.default-expiration-hours:24}")
+    private Integer defaultExpirationHours;
+
+    public Integer getDefaultClickLimit() {
+        return defaultClickLimit;
+    }
+
+    public Integer getDefaultExpirationHours() {
+        return defaultExpirationHours;
+    }
 } 

@@ -62,11 +62,14 @@ public class UrlController {
             logger.info("Creating short URL for: {} by user: {}", originalUrl, userDetails.getUsername());
             User user = userService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
-            
-            Integer finalClickLimit = clickLimit == null ? urlConfig.getDefaultClickLimit() : 
+
+            Integer configFinalClickLimit = urlConfig.getDefaultClickLimit();
+            Integer finalClickLimit = clickLimit == null ? configFinalClickLimit :
                                    clickLimit == 0 ? null : clickLimit;
 
-            Integer finalExpirationHours = expirationHours == null ? urlConfig.getDefaultExpirationHours() : 
+            Integer configFinalExpirationHours = urlConfig.getDefaultExpirationHours();
+
+            Integer finalExpirationHours = expirationHours == null ? configFinalExpirationHours :
                                          expirationHours == 0 ? null : expirationHours;
 
             LocalDateTime expiresAt = null;

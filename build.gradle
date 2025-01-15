@@ -37,6 +37,7 @@ dependencies {
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // Security
     implementation 'org.springframework.security:spring-security-oauth2-client'
